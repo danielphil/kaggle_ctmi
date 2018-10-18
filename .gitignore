@@ -103,6 +103,18 @@ venv.bak/
 # mypy
 .mypy_cache/
 
+# Sensitive or high-churn files
+**/.idea/workspace.xml
+**/.idea/usage_statistics.xml
+**/.idea/tasks.xml
+**/.idea/**/dataSources/
+**/.idea/**/dataSources.ids
+**/.idea/**/dataSources.local.xml
+**/.idea/**/sqlDataSources.xml
+**/.idea/**/dynamic.xml
+**/.idea/**/uiDesigner.xml
+**/.idea/**/dbnavigator.xml
+
 # Added by Ian
 **/*.dcm
 gash/
