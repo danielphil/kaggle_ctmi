@@ -13,7 +13,7 @@ def test_cohort_init():
     cohort = Cohort(ShaipWorkspace())
     # print(datasets.ids)
     # print(datasets.id_to_path_map)
-    assert len(cohort.ids) == 100
+    assert len(cohort.ids) == 16
     assert len(cohort.ids[0]) == 7 and cohort.ids[0][:3] == 'ID_'
     assert os.path.exists(cohort.filepaths[0])
     print(SMILY, "test_cohort_init passed.")
@@ -119,3 +119,7 @@ def test_generate_static_index_html():
     generate_static_index_html(shaip, 'gash_index.html')
     assert os.path.exists(shaip.results_dir + 'gash_index.html')
     print(SMILY, "test_generate_static_index_html passed")
+
+def test_main():
+    main(ShaipWorkspace())
+    print(SMILY, "test_main passed")

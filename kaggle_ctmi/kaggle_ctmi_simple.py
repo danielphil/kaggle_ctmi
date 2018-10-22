@@ -32,13 +32,13 @@ class ShaipWorkspace(object):
     container local file paths.   
     """
 
-    def __init__(self):
-        self.data_dir =        'ShaipWorkspace/inputs/dicomdata/'       # Will change
-        self.groundtruth_dir = 'ShaipWorkspace/inputs/groundtruth/'     # Not yet used
-        self.results_dir =     'ShaipWorkspace/outputs/results/'
-        self.models_dir =      'ShaipWorkspace/outputs/models/'
-        self.tensorboad_dir =  'ShaipWorkspace/outputs/tensorboard/'    # Not yet used
-        self.cache_dir =       'ShaipWorkspace/cache/'                  # not yet used
+    def __init__(self, rootdir='ShaipUnittestWorkspace/'):
+        self.data_dir =        rootdir + 'inputs/dicomdata/'       # Will change
+        self.groundtruth_dir = rootdir + 'inputs/groundtruth/'     # Not yet used
+        self.results_dir =     rootdir + 'outputs/results/'
+        self.models_dir =      rootdir + 'outputs/models/'
+        self.tensorboad_dir =  rootdir + 'outputs/tensorboard/'    # Not yet used
+        self.cache_dir =       rootdir + 'Scache/'                  # not yet used
 
 
 class Cohort(object):
@@ -380,4 +380,4 @@ def main(shaip):
 
 # Lets do it!
 if __name__ == '__main__':
-    main(ShaipWorkspace())
+    main(ShaipWorkspace('ShaipWorkspace/'))
