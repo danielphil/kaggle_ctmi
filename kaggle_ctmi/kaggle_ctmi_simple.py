@@ -54,6 +54,7 @@ class Cohort(object):
         the data"""
         self.shaip = shaip
         self.filepaths = glob(self.shaip.data_dir + '*.dcm')
+        self.filepaths.sort()  # ensure order is deterministic
         self.ids = [os.path.basename(fp)[:7] for fp in self.filepaths]
         self.id_to_path_map = {id_: path for id_, path in zip(self.ids, self.filepaths)}
         self.size = len(self.ids)
@@ -323,6 +324,7 @@ See all results in the <a href="notebook.html"> Jupuyter Notebook</a>
 
 # noinspection PyStringFormat
 def main(shaip):
+    np.random.seed(42)
     start = time.time()
     # Define our SHAIP Workspace file structure
 
@@ -340,10 +342,9 @@ def main(shaip):
     x_data = data_scaling(ppch.images)
     y_data = keras.utils.to_categorical(ppch.groundtruth, 2)
     ids = ppch.ids
-    x_train, x_test, y_train, y_test, ids_train, ids_test = train_test_split(x_data, y_data, ids,
-                                                                             test_size=0.20,
-                                                                             shuffle=True,
-                                                                             random_state=21)
+    x_train, x_test, y_train, y_test, ids_train, ids_test = \
+        train_test_split(x_data, y_data, ids,
+                         stratify=y_data, test_size=0.20, shuffle=True, random_state=43)
     print("Training set: %d class 0, %d class 1" % (np.sum(y_train[:, 0]), np.sum(y_train[:, 1])))
     print("Testing set:  %d class 0, %d class 1" % (np.sum(y_test[:, 0]), np.sum(y_test[:, 1])))
 

@@ -1,4 +1,3 @@
-# coding: utf-8
 
 from kaggle_ctmi_simple import *
 
@@ -119,6 +118,7 @@ def test_generate_static_index_html():
     generate_static_index_html(shaip, 'gash_index.html')
     assert os.path.exists(shaip.results_dir + 'gash_index.html')
     print(SMILY, "test_generate_static_index_html passed")
+
 
 def test_main():
     main(ShaipWorkspace())
