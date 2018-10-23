@@ -33,6 +33,12 @@ class ShaipWorkspace(object):
         self.tensorboad_dir =  rootdir + 'outputs/tensorboard/'    # Not yet used
         self.cache_dir =       rootdir + 'cache/'                  # not yet used
 
+    def check(self):
+        for d in [self.data_dir, self.results_dir]:
+            if not os.path.isdir(d):
+                print("SHAIP directory %s is not found" % d)
+                assert False
+
 
 class Cohort(object):
     """ 
