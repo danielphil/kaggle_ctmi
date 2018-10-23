@@ -4,8 +4,6 @@ from tempfile import TemporaryDirectory
 from algorithm import *
 from cohort import Cohort, ShaipWorkspace
 
-SMILY = u'\U0001F603'
-
 
 def test__preprocess_one_dicom():
     cohort = Cohort(ShaipWorkspace())
@@ -16,13 +14,11 @@ def test__preprocess_one_dicom():
     plt.imshow(image)
     plt.colorbar()
     plt.show()
-    print(SMILY, "test__preprocess_one_dicom passed.")
 
 
 def test_preprocessed_cohort_accessors():
     ppch = PreprocessedCohort(Cohort(ShaipWorkspace()))
     assert len(ppch.images) == len(ppch.ids) == len(ppch.groundtruth) == ppch.size
-    print(SMILY, "test_preprocessed_cohort_accessors passed.")
 
 
 def test_data_scaling():
@@ -39,7 +35,6 @@ def test_data_scaling():
 def test_build_model():
     model = build_model((128, 128))
     model.summary()
-    print(SMILY, "test_build_model passed.")
 
 
 def test_model_save_and_load():
@@ -49,7 +44,6 @@ def test_model_save_and_load():
         temp_file_name = os.path.join(dir_name, 'test_model')
         save_model(model, temp_file_name)
         _ = load_model(temp_file_name)
-    print(SMILY, "test_model_save_and_load passed.")
 
 
 def test_accuracyhistory():
@@ -62,4 +56,3 @@ def test_accuracyhistory():
         history.on_epoch_end(epoch, log)
 
     history.plot_training()
-    print(SMILY, "test_AccuraryHistory passed.")
