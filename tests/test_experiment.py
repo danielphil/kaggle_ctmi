@@ -1,6 +1,6 @@
-from cohort import ShaipWorkspace
-from experiment import main
+from experiment import Experiment
 
 
 def test_main():
-    main(ShaipWorkspace())
+    expt = Experiment('ShaipUnittestWorkspace/')
+    expt.main()
