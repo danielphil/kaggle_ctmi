@@ -66,6 +66,46 @@ class PreprocessedCohort(object):
         return self._preprocessed_images
 
 
+def train(cohort):
+    """ Train on the given training cohort (already split from test)
+    This includes pre-processing.   Return the trained model"""
+
+    # Preprocess
+    ppch = PreprocessedCohort(cohort)
+    # Prepare for training - scaling and making a train/test split
+    x_data = data_scaling(ppch.images)
+    y_data = keras.utils.to_categorical(cohort.groundtruth, 2)
+
+    # Build the model
+    input_shape = PreprocessedCohort.imshape
+    model = build_model(input_shape)
+    model.compile(
+        loss=keras.losses.categorical_crossentropy,
+        optimizer=keras.optimizers.Adam(),
+        metrics=['accuracy'])
+    history = AccuracyHistory()
+
+    # Train and save the model
+    model.fit(
+        x_data, y_data,
+        batch_size=20, shuffle=True, epochs=15, verbose=2,
+        validation_split=0.2, callbacks=[history])
+
+    # Plot a graph of training
+    history.plot_training()
+
+    return model
+
+
+def predict(model, cohort):
+    # Preprocess
+    ppch = PreprocessedCohort(cohort)
+    # Prepare for training - scaling and making a train/test split
+    x_data = data_scaling(ppch.images)
+    predictions = model.predict_classes(x_data)
+    return predictions
+
+
 def data_scaling(images):
     """
     Given a list of pre-processed images (e.g. from PreprocessedCohort.images) perform

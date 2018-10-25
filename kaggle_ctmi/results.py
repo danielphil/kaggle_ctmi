@@ -27,11 +27,11 @@ The Cancer Genome Atlas LUADA</a> collection
 
 <h2> Dataset exploration</h2>
 
-<img src="example_images.png">
+<img src="test_images.png">
 
 <p></p>
 
-A summary table can be seen <a href="summary.html">  here </a>.
+A summary table can be seen <a href="test_summary.html">  here </a>.
 
 <h2>Results</h2>
 

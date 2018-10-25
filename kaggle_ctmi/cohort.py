@@ -4,12 +4,14 @@ A maximally simple solution to CT / CTA detection!
 
 import os
 from glob import glob
+from collections import Counter
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pydicom
 from IPython.display import display
+from sklearn.model_selection import train_test_split
 
 pd.set_option('precision', 2)
 
@@ -97,17 +99,26 @@ class Cohort(object):
                                  self.filepaths]
         return self._groundtruth
 
-    # def split_cohort_train_test(self, test_prop=0.3):
-    #     """ Create two cohorts from this one, for train and test.
-    #     Share image objects"""
-    #     x_data, y_data, ids = self.images, self.groundtruth, self.ids
-    #     x_train, x_test, y_train, y_test, ids_train, ids_test = \
-    #         train_test_split(x_data, y_data, self.ids,
-    #                          stratify=self.y_data, test_size=0.20, shuffle=True, random_state=43)
-    #     print("Training set: %d class 0, %d class 1" %
-    #           (np.sum(self.y_train[:, 0]), np.sum(self.y_train[:, 1])))
-    #     print("Testing set:  %d class 0, %d class 1" %
-    #           (np.sum(self.y_test[:, 0]), np.sum(self.y_test[:, 1])))
+    def class_counts(self):
+        """ Return a 2-tuple of counts for class 0 and class 1 in the cohort """
+        counter = Counter(self.groundtruth)
+        assert counter[0] + counter[1] == self.size
+        return counter[0], counter[1]
+
+    def split_cohort_train_test(self, test_size=0.3):
+        """ Create two cohorts from this one, for train and test.
+        Share image objects"""
+        filepaths, y_data = self.filepaths, self.groundtruth,
+        filepaths_train, filepaths_test = \
+            train_test_split(filepaths,
+                             stratify=y_data, test_size=test_size, shuffle=True, random_state=43)
+
+        train_cohort = Cohort(filepaths_train)
+        test_cohort = Cohort(filepaths_test)
+        print("Training set: %d class 0, %d class 1" % train_cohort.class_counts())
+        print("Testing set:  %d class 0, %d class 1" % test_cohort.class_counts())
+
+        return train_cohort, test_cohort
 
     # noinspection PyTypeChecker
     def explore_cohort(self, savefilepath=None):
@@ -139,11 +150,14 @@ class Cohort(object):
     def show_images(self, savefilepath=None):
         fig, axes = plt.subplots(nrows=4, ncols=4, figsize=(16, 16))
         for ix, ax in enumerate(axes.flat):  # Show just a selection
+            if ix >= len(self.images):
+                break
             im = self.images[ix]
             gt = self.groundtruth[ix]
             pltim = ax.imshow(im)
             ax.set_title("%s GT=%d" % (self.ids[ix], gt))
             fig.colorbar(pltim, ax=ax)
+
         if savefilepath is not None:
             _, extension = os.path.splitext(savefilepath)
             assert extension in ('.png', '.jpeg')
