@@ -37,6 +37,7 @@ class ShaipWorkspace(object):
         for d in [self.data_dir, self.results_dir]:
             if not os.path.isdir(d):
                 print("SHAIP directory %s is not found" % d)
+                print("Working directory is %s", os.getcwd())
                 assert False
 
 
@@ -47,19 +48,24 @@ class Cohort(object):
     Accessors generally present lazy evaluation semantics.
     """
 
-    def __init__(self, shaip):
-        """ The constructor scans the data path to find what data is present and
-        setup a list and dictionary of dataset ids and paths.  It does not *read*
-        the data"""
-        self.shaip = shaip
-        self.filepaths = glob(self.shaip.data_dir + '*.dcm')
-        self.filepaths.sort()  # ensure order is deterministic
+    def __init__(self, filepaths):
+        """ This constructor takes a list of filepaths to DICOM files.  It can figure
+        out groundtruth (contrast or not) from the filename"""
+        self.filepaths = filepaths
         self.ids = [os.path.basename(fp)[:7] for fp in self.filepaths]
-        self.id_to_path_map = {id_: path for id_, path in zip(self.ids, self.filepaths)}
         self.size = len(self.ids)
 
         # Private cache storage
         self._images = self._dicoms = self._groundtruth = None
+
+    @classmethod
+    def from_shaip_workspace(cls, shaip):
+        """ This constructor scans the data path to find what data is present and
+        setup a list and dictionary of dataset ids and paths.  It does not *read*
+        the data"""
+        filepaths = glob(shaip.data_dir + '*.dcm')
+        filepaths.sort()  # ensure order is deterministic
+        return cls(filepaths)
 
     @property
     def dicoms(self):
@@ -90,6 +96,18 @@ class Cohort(object):
             self._groundtruth = [Cohort._filename_to_contrast_gt(os.path.basename(fp)) for fp in
                                  self.filepaths]
         return self._groundtruth
+
+    # def split_cohort_train_test(self, test_prop=0.3):
+    #     """ Create two cohorts from this one, for train and test.
+    #     Share image objects"""
+    #     x_data, y_data, ids = self.images, self.groundtruth, self.ids
+    #     x_train, x_test, y_train, y_test, ids_train, ids_test = \
+    #         train_test_split(x_data, y_data, self.ids,
+    #                          stratify=self.y_data, test_size=0.20, shuffle=True, random_state=43)
+    #     print("Training set: %d class 0, %d class 1" %
+    #           (np.sum(self.y_train[:, 0]), np.sum(self.y_train[:, 1])))
+    #     print("Testing set:  %d class 0, %d class 1" %
+    #           (np.sum(self.y_test[:, 0]), np.sum(self.y_test[:, 1])))
 
     # noinspection PyTypeChecker
     def explore_cohort(self, savefilepath=None):

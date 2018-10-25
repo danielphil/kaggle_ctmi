@@ -6,7 +6,7 @@ from cohort import Cohort, ShaipWorkspace
 
 
 def test__preprocess_one_dicom():
-    cohort = Cohort(ShaipWorkspace())
+    cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
     ppch = PreprocessedCohort(cohort)
     dcm1 = cohort.dicoms[0]
     image = ppch._preprocess_one_dicom(dcm1)
@@ -17,7 +17,7 @@ def test__preprocess_one_dicom():
 
 
 def test_preprocessed_cohort_accessors():
-    ppch = PreprocessedCohort(Cohort(ShaipWorkspace()))
+    ppch = PreprocessedCohort(Cohort.from_shaip_workspace(ShaipWorkspace()))
     assert len(ppch.images) == len(ppch.ids) == len(ppch.groundtruth) == ppch.size
 
 

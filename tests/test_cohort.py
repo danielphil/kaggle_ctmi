@@ -7,17 +7,15 @@ import numpy as np
 from cohort import Cohort, ShaipWorkspace
 
 
-def test_cohort_init():
-    cohort = Cohort(ShaipWorkspace())
-    # print(datasets.ids)
-    # print(datasets.id_to_path_map)
+def test_from_shaip_workspace():
+    cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
     assert len(cohort.ids) == 16
     assert len(cohort.ids[0]) == 7 and cohort.ids[0][:3] == 'ID_'
     assert os.path.exists(cohort.filepaths[0])
 
 
 def test_cohort_accessors():
-    cohort = Cohort(ShaipWorkspace())
+    cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
     assert len(cohort.dicoms) == len(cohort.ids) == len(cohort.images) == len(
         cohort.groundtruth) == len(cohort.groundtruth) == len(cohort.filepaths) == cohort.size
     assert all(['PixelData' in dcm for dcm in cohort.dicoms])
@@ -28,7 +26,7 @@ def test_cohort_accessors():
 
 
 def test_explore_cohort():
-    cohort = Cohort(ShaipWorkspace())
+    cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
     with TemporaryDirectory() as tmp_dir:
         savefilepath = os.path.join(tmp_dir, 'cohort_table.png')
         cohort.explore_cohort(savefilepath)
@@ -36,7 +34,7 @@ def test_explore_cohort():
 
 
 def test_show_images():
-    cohort = Cohort(ShaipWorkspace())
+    cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
     with TemporaryDirectory() as tmp_dir:
         savefilepath = os.path.join(tmp_dir, 'image_gallery.png')
         cohort.show_images(savefilepath)

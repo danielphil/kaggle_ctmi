@@ -29,7 +29,7 @@ class Experiment(object):
 
     def load(self):
         # Obtain the cohort of data from SHAIP
-        self.cohort = Cohort(self.shaip)
+        self.cohort = Cohort.from_shaip_workspace(self.shaip)
 
         # Show and output images and information on what we're working with
         self.cohort.show_images(self.shaip.results_dir + 'example_images.png')
@@ -149,7 +149,6 @@ def old_main(shaip):
 
 # Lets do it!
 if __name__ == '__main__':
-    # old_main(ShaipWorkspace('ShaipWorkspace/'))
     np.random.seed(42)
     expt = Experiment('ShaipWorkspace/')
     expt.main()
