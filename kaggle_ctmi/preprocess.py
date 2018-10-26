@@ -1,7 +1,10 @@
 import pydicom
 import pickle
+import os
+import numpy as np
 from glob import glob
 from skimage.transform import downscale_local_mean
+import scipy.misc
 
 images_path = 'input/images'
 
@@ -36,7 +39,7 @@ def preprocess_one_dicom(dcm):
 
     # Finally, downscale !
     downsample_factor = (4, 4)
-    image = downscale_local_mean(image, self.downsample_factor)
+    image = downscale_local_mean(image, downsample_factor)
 
     return image
 
@@ -46,12 +49,15 @@ def preprocess_dicom(image_path):
     image = preprocess_one_dicom(dicom_image)
 
     # perform downsampling and clipping to data range
-    pickle.dump(image, '{}/{}.pkl'.format(images_path, file_id))
+    output_path = '{}/{}.pkl'.format(images_path, file_id)
+    with open(output_path, 'wb') as file:
+        pickle.dump(image, file)
+        print("Wrote %s" % output_path)
 
     # save ground truth
 
 
 if __name__ == '__main__':
-    filepaths = glob('datasets/*.dcm')
+    filepaths = glob('dicom_dir/*.dcm')
     for path in filepaths:
         preprocess_dicom(path)
