@@ -3,7 +3,7 @@ A maximally simple solution to CT / CTA detection!
 """
 
 
-def generate_static_index_html(shaip, filename):
+def generate_static_index_html(shaip, result_text, filename):
     """ Given filename should include the path and filename. Write the file
     into the SHAIP results_dir directory """
     assert '.html' in filename
@@ -35,10 +35,14 @@ A summary table can be seen <a href="test_summary.html">  here </a>.
 
 <h2>Results</h2>
 
-See all results in the <a href="notebook.html"> Jupuyter Notebook</a>
+%s
+
+<p></p>
+
+... more results to come!
 
 </body>
 </html>
 """
     with open(shaip.results_dir + filename, 'w') as fp:
-        fp.write(contents)
+        fp.write(contents % result_text)

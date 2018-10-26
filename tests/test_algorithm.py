@@ -7,27 +7,30 @@ import numpy as np
 from keras.layers import Dense
 from keras.models import Sequential
 
-import algorithm
+from algorithm import Algorithm, AccuracyHistory
 from cohort import Cohort, ShaipWorkspace
 
 
 def test__preprocess_one_dicom():
+    algorithm = Algorithm()
     cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
-    ppch = algorithm.PreprocessedCohort(cohort)
     dcm1 = cohort.dicoms[0]
-    image = ppch._preprocess_one_dicom(dcm1)
-    assert image.shape == algorithm.PreprocessedCohort.imshape
+    image = algorithm._preprocess_one_dicom(dcm1)
+    assert image.shape == Algorithm.imshape
     plt.imshow(image)
     plt.colorbar()
     plt.show()
 
 
 def test_preprocessed_cohort_accessors():
-    ppch = algorithm.PreprocessedCohort(Cohort.from_shaip_workspace(ShaipWorkspace()))
-    assert len(ppch.images) == len(ppch.ids) == len(ppch.groundtruth) == ppch.size
+    algorithm = Algorithm()
+    cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
+    ppimages = algorithm.preprocessed_images(cohort)
+    assert len(ppimages) == cohort.size
 
 
 def test_data_scaling():
+    algorithm = Algorithm()
     xs, ys = 64, 128
     im = np.random.uniform(size=(xs, ys), high=2000, low=-300)
     n = 3
@@ -39,17 +42,20 @@ def test_data_scaling():
 
 
 def test_train():
+    algorithm = Algorithm()
     cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
     model = algorithm.train(cohort)
     assert model is not None
 
 
 def test_build_model():
-    model = algorithm.build_model((128, 128))
+    algorithm = Algorithm()
+    model = algorithm.build_model()
     model.summary()
 
 
 def test_model_save_and_load():
+    algorithm = Algorithm()
     model = Sequential()
     model.add(Dense(10, activation='relu', input_shape=(5, 1)))
     with TemporaryDirectory() as dir_name:
@@ -59,7 +65,7 @@ def test_model_save_and_load():
 
 
 def test_accuracyhistory():
-    history = algorithm.AccuracyHistory()
+    history = AccuracyHistory()
 
     # Simulate some training!
     history.on_train_begin()
