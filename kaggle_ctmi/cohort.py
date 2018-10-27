@@ -3,14 +3,11 @@ A maximally simple solution to CT / CTA detection!
 """
 
 import os
-from glob import glob
 from collections import Counter
+from glob import glob
 
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import pydicom
-from IPython.display import display
 from sklearn.model_selection import train_test_split
 
 pd.set_option('precision', 2)
@@ -120,46 +117,7 @@ class Cohort(object):
 
         return train_cohort, test_cohort
 
-    # noinspection PyTypeChecker
-    def explore_cohort(self, savefilepath=None):
-        df = pd.DataFrame(
-            columns=['ID', 'GT', 'Dtype', 'MinV', 'MaxV', 'Slope', 'Incpt', 'MmPerPix', 'Padding'])
-        for ix in range(self.size):
-            image = self.images[ix]
-            dtype = image.dtype
-            dcm = self.dicoms[ix]
-            id_ = self.ids[ix]
-            gt = self.groundtruth[ix]
-            padding = dcm.data_element(
-                'PixelPaddingValue').value if 'PixelPaddingValue' in dcm else None
-            slope = dcm.data_element('RescaleSlope').value
-            intercept = dcm.data_element('RescaleIntercept').value
-            min_, max_ = float(np.min(image)), float(np.max(image))
-            mmpp_x, mmpp_y = dcm.data_element('PixelSpacing').value
-            assert mmpp_x == mmpp_y
-            row = (id_, gt, dtype, min_, max_, slope, intercept, mmpp_x, padding)
 
-            df.loc[ix] = row
+# noinspection PyTypeChecker
 
-        display(df.describe(include='all'))
-        display(df)
-        if savefilepath is not None:
-            with open(savefilepath, 'w') as fp:
-                df.to_html(fp)
 
-    def show_images(self, savefilepath=None):
-        fig, axes = plt.subplots(nrows=4, ncols=4, figsize=(16, 16))
-        for ix, ax in enumerate(axes.flat):  # Show just a selection
-            if ix >= len(self.images):
-                break
-            im = self.images[ix]
-            gt = self.groundtruth[ix]
-            pltim = ax.imshow(im)
-            ax.set_title("%s GT=%d" % (self.ids[ix], gt))
-            fig.colorbar(pltim, ax=ax)
-
-        if savefilepath is not None:
-            _, extension = os.path.splitext(savefilepath)
-            assert extension in ('.png', '.jpeg')
-            plt.savefig(savefilepath)
-        plt.show()

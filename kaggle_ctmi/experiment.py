@@ -9,7 +9,7 @@ from sklearn.metrics import accuracy_score
 
 from algorithm import Algorithm
 from cohort import ShaipWorkspace, Cohort
-from results import generate_static_index_html
+from results import generate_static_index_html, show_images, explore_cohort
 
 
 class Experiment(object):
@@ -24,8 +24,8 @@ class Experiment(object):
     def show(self, cohort):
         """ Should be moved into results """
         # Show and output images and information on what we're working with
-        cohort.show_images(self.shaip.results_dir + 'test_images.png')
-        cohort.explore_cohort(self.shaip.results_dir + 'test_summary.html')
+        show_images(cohort, self.shaip.results_dir + 'test_images.png')
+        explore_cohort(cohort, self.shaip.results_dir + 'test_summary.html')
 
     def evaluate(self, test_cohort, predictions):
 
@@ -47,9 +47,9 @@ class Experiment(object):
 
         self.algorithm.save_model(model, self.shaip.models_dir + 'model')
 
-        self.show(test_cohort)
-
         test_predictions = self.algorithm.predict(model, test_cohort)
+
+        self.show(test_cohort)
 
         self.evaluate(test_cohort, test_predictions)
 

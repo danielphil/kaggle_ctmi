@@ -1,6 +1,5 @@
 
 import os
-from tempfile import TemporaryDirectory
 
 import numpy as np
 
@@ -29,22 +28,6 @@ def cohort_accessors_test_helper(cohort):
 def test_cohort_accessors():
     cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
     cohort_accessors_test_helper(cohort)
-
-
-def test_explore_cohort():
-    cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
-    with TemporaryDirectory() as tmp_dir:
-        savefilepath = os.path.join(tmp_dir, 'cohort_table.png')
-        cohort.explore_cohort(savefilepath)
-        assert os.path.exists(savefilepath)
-
-
-def test_show_images():
-    cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
-    with TemporaryDirectory() as tmp_dir:
-        savefilepath = os.path.join(tmp_dir, 'image_gallery.png')
-        cohort.show_images(savefilepath)
-        assert os.path.exists(savefilepath)
 
 
 def test__filename_to_contrast_gt():
