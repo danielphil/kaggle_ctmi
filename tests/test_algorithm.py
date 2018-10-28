@@ -59,9 +59,9 @@ def test_model_save_and_load():
     model = Sequential()
     model.add(Dense(10, activation='relu', input_shape=(5, 1)))
     with TemporaryDirectory() as dir_name:
-        temp_file_name = os.path.join(dir_name, 'test_model')
-        algorithm.save_model(model, temp_file_name)
-        _ = algorithm.load_model(temp_file_name)
+        temp_file_path = os.path.join(dir_name, 'test_model')
+        algorithm.save_model(model, temp_file_path)
+        _ = algorithm.load_model(temp_file_path)
 
 
 def test_accuracyhistory():
@@ -73,4 +73,7 @@ def test_accuracyhistory():
         log = {'acc': acc, 'val_acc': val_acc}
         history.on_epoch_end(epoch, log)
 
-    history.plot_training()
+    with TemporaryDirectory() as dir_name:
+        temp_file_path = os.path.join(dir_name, 'training_plot.png')
+        history.plot_training(temp_file_path)
+        assert os.path.exists(temp_file_path)

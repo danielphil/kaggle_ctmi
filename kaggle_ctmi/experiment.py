@@ -32,7 +32,8 @@ class Experiment(object):
 
         test_predictions = self.algorithm.predict(model, test_cohort)
 
-        self.results.show_results(test_cohort, test_predictions)
+        self.results.show_results(train_cohort, test_cohort,
+                                  self.algorithm.history, test_predictions)
 
 
 # Lets do it!

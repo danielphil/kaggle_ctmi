@@ -18,8 +18,7 @@ class Algorithm(object):
     isolated from other infra-structure issues. """
 
     def __init__(self):
-        """ At the moment at least, we're stateless :-)."""
-        pass
+        self.history = None     # Will keep a plot of accuracy by epoch
 
     # Class level constants
     downsample_factor = (4, 4)
@@ -72,16 +71,13 @@ class Algorithm(object):
             loss=keras.losses.categorical_crossentropy,
             optimizer=keras.optimizers.Adam(),
             metrics=['accuracy'])
-        history = AccuracyHistory()
+        self.history = AccuracyHistory()
 
         # Train and save the model
         model.fit(
             x_data, y_data,
             batch_size=20, shuffle=True, epochs=15, verbose=2,
-            validation_split=0.2, callbacks=[history])
-
-        # Plot a graph of training
-        history.plot_training()
+            validation_split=0.2, callbacks=[self.history])
 
         return model
 
@@ -171,7 +167,7 @@ class AccuracyHistory(keras.callbacks.Callback):
         self.acc.append(logs.get('acc'))
         self.val_acc.append(logs.get('val_acc'))
 
-    def plot_training(self):
+    def plot_training(self, savefilepath):
         epochs = range(1, len(self.acc) + 1)
         plt.plot(epochs, self.acc, label='Train')
         plt.plot(epochs, self.val_acc, label='Validation')
@@ -179,4 +175,11 @@ class AccuracyHistory(keras.callbacks.Callback):
         plt.xlabel('Epochs')
         plt.ylabel('Accuracy')
         plt.legend()
-        plt.show()
+
+        if savefilepath is not None:
+            _, extension = os.path.splitext(savefilepath)
+            assert extension in ('.png', '.jpeg')
+            plt.savefig(savefilepath)
+            plt.show()
+        else:
+            plt.show()

@@ -38,15 +38,27 @@ class Results(object):
     <a href="https://wiki.cancerimagingarchive.net/display/Public/TCGA-LUAD">
     The Cancer Genome Atlas LUADA</a> collection
     
-    <h2> Dataset exploration</h2>
-    
-    <img src="test_images.png">
-    
-    <p></p>
     
     A summary table can be seen <a href="test_summary.html">  here </a>.
     
-    <h2>Results</h2>
+    <h2>Training</h2>
+    
+    A table of training datasets can be seen <a href="training_cohort_table.html">  here </a>.
+    
+    <img src="training_images.png">
+    
+    <p></p>
+    
+    <img src="training_plot.png">
+    <p></p>
+    
+    
+    <h2>Test Results</h2>
+    
+    A table of test datasets can be seen <a href="test_cohort_table.html">  here </a>.
+    
+    <img src="test_images.png">
+    <p></p>
     
     %s
     
@@ -105,17 +117,25 @@ class Results(object):
             _, extension = os.path.splitext(savefilename)
             assert extension in ('.png', '.jpeg')
             plt.savefig(self.results_dir + savefilename)
-        plt.show()
+            plt.show()
+        else:
+            plt.show()
 
-    def show_results(self, cohort, predictions):
-        self.show_images(cohort, predictions, 'test_images.png')
+    def show_results(self, training_cohort, test_cohort, history, predictions):
 
-        self.explore_cohort(cohort, 'test_summary.html')
+        self.show_images(training_cohort, None, 'training_images.png')
+        self.show_images(test_cohort, predictions, 'test_images.png')
 
-        score = accuracy_score(cohort.groundtruth, predictions)
+        self.explore_cohort(training_cohort, 'training_cohort_table.html')
+        self.explore_cohort(test_cohort, 'test_cohort_table.html')
+
+        score = accuracy_score(test_cohort.groundtruth, predictions)
 
         # Output some results
         result = 'Test accuracy: %5.3f' % score
         print(result)
+
+        # Render the training plot to a png
+        history.plot_training(os.path.join(self.results_dir, 'training_plot.png'))
 
         self.generate_static_index_html(result, 'index.html')

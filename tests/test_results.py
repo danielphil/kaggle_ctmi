@@ -9,7 +9,8 @@ from results import Results
 def test_generate_static_index_html():
     with TemporaryDirectory() as tmp_dir:
         results = Results(tmp_dir)
-        results.generate_static_index_html("Fantastic score of .999", 'index.html')
+        score_text = "Fantastic score of .999"
+        results.generate_static_index_html(score_text, 'index.html')
         assert os.path.exists(tmp_dir + 'index.html')
 
 
@@ -30,3 +31,4 @@ def test_show_images():
         savefilename = 'image_gallery.png'
         results.show_images(cohort, predictions, savefilename)
         assert os.path.exists(tmp_dir + savefilename)
+
