@@ -5,11 +5,10 @@ A maximally simple solution to CT / CTA detection based in Kaggle datasets.
 import time
 
 import numpy as np
-from sklearn.metrics import accuracy_score
 
 from algorithm import Algorithm
 from cohort import ShaipWorkspace, Cohort
-from results import generate_static_index_html, show_images, explore_cohort
+from results import Results
 
 
 class Experiment(object):
@@ -19,26 +18,10 @@ class Experiment(object):
         self.shaip = ShaipWorkspace(shaip_root_dir)
         self.shaip.check()
         self.algorithm = Algorithm()
-        np.random.seed(42)
-
-    def show(self, cohort):
-        """ Should be moved into results """
-        # Show and output images and information on what we're working with
-        show_images(cohort, self.shaip.results_dir + 'test_images.png')
-        explore_cohort(cohort, self.shaip.results_dir + 'test_summary.html')
-
-    def evaluate(self, test_cohort, predictions):
-
-        score = accuracy_score(test_cohort.groundtruth, predictions)
-        # Output some results
-        result = 'Test accuracy: %5.3f' % score
-        print(result)
-        with open(self.shaip.results_dir + 'score.txt', 'w') as scorefp:
-            scorefp.write(result)
-        generate_static_index_html(self.shaip, result, 'index.html')
+        self.results = Results(self.shaip.results_dir)
 
     def main(self):
-        """ Experiment entry point """
+        """ Main Experiment entry point """
         cohort = Cohort.from_shaip_workspace(self.shaip)
 
         train_cohort, test_cohort = cohort.split_cohort_train_test(0.3)
@@ -49,9 +32,7 @@ class Experiment(object):
 
         test_predictions = self.algorithm.predict(model, test_cohort)
 
-        self.show(test_cohort)
-
-        self.evaluate(test_cohort, test_predictions)
+        self.results.show_results(test_cohort, test_predictions)
 
 
 # Lets do it!

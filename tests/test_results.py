@@ -2,27 +2,31 @@
 import os
 from tempfile import TemporaryDirectory
 
-from cohort import ShaipWorkspace, Cohort
-from results import generate_static_index_html, explore_cohort, show_images
+from cohort import Cohort, ShaipWorkspace
+from results import Results
 
 
 def test_generate_static_index_html():
-    shaip = ShaipWorkspace()
-    generate_static_index_html(shaip, "Fantastic score of .999", 'gash_index.html')
-    assert os.path.exists(shaip.results_dir + 'gash_index.html')
+    with TemporaryDirectory() as tmp_dir:
+        results = Results(tmp_dir)
+        results.generate_static_index_html("Fantastic score of .999", 'index.html')
+        assert os.path.exists(tmp_dir + 'index.html')
 
 
 def test_explore_cohort():
-    cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
     with TemporaryDirectory() as tmp_dir:
-        savefilepath = os.path.join(tmp_dir, 'cohort_table.png')
-        explore_cohort(cohort, savefilepath)
-        assert os.path.exists(savefilepath)
+        results = Results(tmp_dir)
+        cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
+        savefilename = 'cohort_table.png'
+        results.explore_cohort(cohort, savefilename)
+        assert os.path.exists(tmp_dir + savefilename)
 
 
 def test_show_images():
-    cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
     with TemporaryDirectory() as tmp_dir:
-        savefilepath = os.path.join(tmp_dir, 'image_gallery.png')
-        show_images(cohort, savefilepath)
-        assert os.path.exists(savefilepath)
+        results = Results(tmp_dir)
+        cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
+        predictions = [0] * cohort.size
+        savefilename = 'image_gallery.png'
+        results.show_images(cohort, predictions, savefilename)
+        assert os.path.exists(tmp_dir + savefilename)
