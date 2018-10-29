@@ -1,14 +1,20 @@
-
 import os
 from tempfile import TemporaryDirectory
 
-import matplotlib.pyplot as plt
+# Set the 'Agg' matplotlib backend to avoid plots appearing on the display (we only want them
+# saved to .png files)
+
 import numpy as np
 from keras.layers import Dense
 from keras.models import Sequential
 
 from algorithm import Algorithm, AccuracyHistory
 from cohort import Cohort, ShaipWorkspace
+
+import matplotlib
+matplotlib.use('Agg')
+# noinspection PyPep8
+import matplotlib.pyplot as plt
 
 
 def test__preprocess_one_dicom():

@@ -5,11 +5,16 @@ A maximally simple solution to CT / CTA detection!
 import os
 
 import keras
-import matplotlib.pyplot as plt
+
 import numpy as np
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 from keras.models import Sequential, model_from_json
 from skimage.transform import downscale_local_mean
+
+import matplotlib
+matplotlib.use('Agg')
+# noinspection PyPep8
+import matplotlib.pyplot as plt
 
 
 # noinspection PyMethodMayBeStatic,PyMethodMayBeStatic,PyMethodMayBeStatic
@@ -169,6 +174,7 @@ class AccuracyHistory(keras.callbacks.Callback):
 
     def plot_training(self, savefilepath):
         epochs = range(1, len(self.acc) + 1)
+        plt.figure()
         plt.plot(epochs, self.acc, label='Train')
         plt.plot(epochs, self.val_acc, label='Validation')
         plt.ylim(0.0, 1.0)

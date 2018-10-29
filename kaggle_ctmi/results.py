@@ -6,8 +6,16 @@ import os
 import numpy as np
 import pandas as pd
 from IPython.core.display import display
-from matplotlib import pyplot as plt
 from sklearn.metrics import accuracy_score
+
+# Set the 'Agg' matplotlib backend to avoid plots appearing on the display (we only want them
+# saved to .png files)
+import matplotlib
+
+matplotlib.use('Agg')
+
+# noinspection PyPep8
+from matplotlib import pyplot as plt
 
 
 # noinspection PyMethodMayBeStatic,PyMethodMayBeStatic,PyMethodMayBeStatic

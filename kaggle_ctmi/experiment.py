@@ -1,5 +1,5 @@
 """
-A maximally simple solution to CT / CTA detection based in Kaggle datasets.
+A simple solution to CT / CTA detection based in Kaggle datasets.
 """
 
 import time
@@ -14,6 +14,7 @@ from results import Results
 class Experiment(object):
     """ This is the top-level class, orchestrating train/test split of the cohort,
     training and evaluation.  However he details are all elsewhere"""
+
     def __init__(self, shaip_root_dir):
         self.shaip = ShaipWorkspace(shaip_root_dir)
         self.shaip.check()
