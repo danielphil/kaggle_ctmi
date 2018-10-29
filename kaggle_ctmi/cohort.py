@@ -3,13 +3,12 @@ A maximally simple solution to CT / CTA detection!
 """
 
 import os
+from collections import Counter
 from glob import glob
 
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import pydicom
-from IPython.display import display
+from sklearn.model_selection import train_test_split
 
 pd.set_option('precision', 2)
 
@@ -33,6 +32,13 @@ class ShaipWorkspace(object):
         self.tensorboad_dir =  rootdir + 'outputs/tensorboard/'    # Not yet used
         self.cache_dir =       rootdir + 'cache/'                  # not yet used
 
+    def check(self):
+        for d in [self.data_dir, self.results_dir]:
+            if not os.path.isdir(d):
+                print("SHAIP directory %s is not found" % d)
+                print("Working directory is %s", os.getcwd())
+                assert False
+
 
 class Cohort(object):
     """ 
@@ -41,19 +47,24 @@ class Cohort(object):
     Accessors generally present lazy evaluation semantics.
     """
 
-    def __init__(self, shaip):
-        """ The constructor scans the data path to find what data is present and
-        setup a list and dictionary of dataset ids and paths.  It does not *read*
-        the data"""
-        self.shaip = shaip
-        self.filepaths = glob(self.shaip.data_dir + '*.dcm')
-        self.filepaths.sort()  # ensure order is deterministic
+    def __init__(self, filepaths):
+        """ This constructor takes a list of filepaths to DICOM files.  It can figure
+        out groundtruth (contrast or not) from the filename"""
+        self.filepaths = filepaths
         self.ids = [os.path.basename(fp)[:7] for fp in self.filepaths]
-        self.id_to_path_map = {id_: path for id_, path in zip(self.ids, self.filepaths)}
         self.size = len(self.ids)
 
         # Private cache storage
         self._images = self._dicoms = self._groundtruth = None
+
+    @classmethod
+    def from_shaip_workspace(cls, shaip):
+        """ This constructor scans the data path to find what data is present and
+        setup a list and dictionary of dataset ids and paths.  It does not *read*
+        the data"""
+        filepaths = glob(shaip.data_dir + '*.dcm')
+        filepaths.sort()  # ensure order is deterministic
+        return cls(filepaths)
 
     @property
     def dicoms(self):
@@ -85,43 +96,28 @@ class Cohort(object):
                                  self.filepaths]
         return self._groundtruth
 
-    # noinspection PyTypeChecker
-    def explore_cohort(self, savefilepath=None):
-        df = pd.DataFrame(
-            columns=['ID', 'GT', 'Dtype', 'MinV', 'MaxV', 'Slope', 'Incpt', 'MmPerPix', 'Padding'])
-        for ix in range(self.size):
-            image = self.images[ix]
-            dtype = image.dtype
-            dcm = self.dicoms[ix]
-            id_ = self.ids[ix]
-            gt = self.groundtruth[ix]
-            padding = dcm.data_element(
-                'PixelPaddingValue').value if 'PixelPaddingValue' in dcm else None
-            slope = dcm.data_element('RescaleSlope').value
-            intercept = dcm.data_element('RescaleIntercept').value
-            min_, max_ = float(np.min(image)), float(np.max(image))
-            mmpp_x, mmpp_y = dcm.data_element('PixelSpacing').value
-            assert mmpp_x == mmpp_y
-            row = (id_, gt, dtype, min_, max_, slope, intercept, mmpp_x, padding)
+    def class_counts(self):
+        """ Return a 2-tuple of counts for class 0 and class 1 in the cohort """
+        counter = Counter(self.groundtruth)
+        assert counter[0] + counter[1] == self.size
+        return counter[0], counter[1]
 
-            df.loc[ix] = row
+    def split_cohort_train_test(self, test_size=0.3):
+        """ Create two cohorts from this one, for train and test.
+        Share image objects"""
+        filepaths, y_data = self.filepaths, self.groundtruth,
+        filepaths_train, filepaths_test = \
+            train_test_split(filepaths,
+                             stratify=y_data, test_size=test_size, shuffle=True, random_state=43)
 
-        display(df.describe(include='all'))
-        display(df)
-        if savefilepath is not None:
-            with open(savefilepath, 'w') as fp:
-                df.to_html(fp)
+        train_cohort = Cohort(filepaths_train)
+        test_cohort = Cohort(filepaths_test)
+        print("Training set: %d class 0, %d class 1" % train_cohort.class_counts())
+        print("Testing set:  %d class 0, %d class 1" % test_cohort.class_counts())
 
-    def show_images(self, savefilepath=None):
-        fig, axes = plt.subplots(nrows=4, ncols=4, figsize=(16, 16))
-        for ix, ax in enumerate(axes.flat):  # Show just a selection
-            im = self.images[ix]
-            gt = self.groundtruth[ix]
-            pltim = ax.imshow(im)
-            ax.set_title("%s GT=%d" % (self.ids[ix], gt))
-            fig.colorbar(pltim, ax=ax)
-        if savefilepath is not None:
-            _, extension = os.path.splitext(savefilepath)
-            assert extension in ('.png', '.jpeg')
-            plt.savefig(savefilepath)
-        plt.show()
+        return train_cohort, test_cohort
+
+
+# noinspection PyTypeChecker
+
+
