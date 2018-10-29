@@ -9,6 +9,8 @@ from glob import glob
 import pandas as pd
 import pydicom
 from sklearn.model_selection import train_test_split
+import pickle
+import json
 
 pd.set_option('precision', 2)
 
@@ -25,8 +27,8 @@ class ShaipWorkspace(object):
     """
 
     def __init__(self, rootdir='ShaipUnittestWorkspace/'):
-        self.data_dir =        rootdir + 'inputs/dicomdata/'       # Will change
-        self.groundtruth_dir = rootdir + 'inputs/groundtruth/'     # Not yet used
+        self.data_dir =        rootdir + 'input/images/'
+        self.groundtruth_file= rootdir + 'input/groundtruth/gt.json'     # Not yet used
         self.results_dir =     rootdir + 'outputs/results/'
         self.models_dir =      rootdir + 'outputs/models/'
         self.tensorboad_dir =  rootdir + 'outputs/tensorboard/'    # Not yet used
@@ -47,52 +49,54 @@ class Cohort(object):
     Accessors generally present lazy evaluation semantics.
     """
 
-    def __init__(self, filepaths):
+    def __init__(self, filepaths, gt_file_path):
         """ This constructor takes a list of filepaths to DICOM files.  It can figure
         out groundtruth (contrast or not) from the filename"""
         self.filepaths = filepaths
+        self.gt_file_path = gt_file_path
         self.ids = [os.path.basename(fp)[:7] for fp in self.filepaths]
         self.size = len(self.ids)
 
         # Private cache storage
-        self._images = self._dicoms = self._groundtruth = None
+        self._images = self._groundtruth = None
 
     @classmethod
     def from_shaip_workspace(cls, shaip):
         """ This constructor scans the data path to find what data is present and
         setup a list and dictionary of dataset ids and paths.  It does not *read*
         the data"""
-        filepaths = glob(shaip.data_dir + '*.dcm')
+        filepaths = glob(shaip.data_dir + '*.pkl')
         filepaths.sort()  # ensure order is deterministic
-        return cls(filepaths)
+        return cls(filepaths, shaip.groundtruth_file)
 
-    @property
-    def dicoms(self):
-        """ Lazily read and return a list of dicom objects in the same order as self.ids """
-        if self._dicoms is None:
-            self._dicoms = [pydicom.dcmread(fp) for fp in self.filepaths]
-        return self._dicoms
+    @staticmethod
+    def _filename_to_image_data(fname):
+        with open(fname, 'rb') as pkl:
+            return pickle.load(pkl)
 
     @property
     def images(self):
         """ Lazily extract and a list of images (2d numpy arrays) in the same order as self.ids """
         if self._images is None:
-            self._images = [dcm.pixel_array for dcm in self.dicoms]
+            self._images = [Cohort._filename_to_image_data(img) for img in self.filepaths]
         return self._images
 
-    @staticmethod
-    def _filename_to_contrast_gt(fname):
-        """ Filenames look like this: "ID_0087_AGE_0044_CONTRAST_0_CT.dcm """
-        assert fname[17:25] == 'CONTRAST'
-        c = fname[26]
-        assert c in ('0', '1')
-        return int(c)
+    def _filename_to_contrast_gt(self, fname):
+        """ Filenames look like this: "ID_0087.pkl """
+        assert fname[:3] == 'ID_'
+        gt_id = fname[:7]
+        with open(self.gt_file_path, 'r') as json_file:
+            data = json.load(json_file)
+
+        c = data[gt_id]
+        assert c in (0, 1)
+        return c
 
     @property
     def groundtruth(self):
         """ Return a list of ground-truth values as {0, 1} integers in the same order as self.ids"""
         if self._groundtruth is None:
-            self._groundtruth = [Cohort._filename_to_contrast_gt(os.path.basename(fp)) for fp in
+            self._groundtruth = [self._filename_to_contrast_gt(os.path.basename(fp)) for fp in
                                  self.filepaths]
         return self._groundtruth
 
@@ -110,8 +114,8 @@ class Cohort(object):
             train_test_split(filepaths,
                              stratify=y_data, test_size=test_size, shuffle=True, random_state=43)
 
-        train_cohort = Cohort(filepaths_train)
-        test_cohort = Cohort(filepaths_test)
+        train_cohort = Cohort(filepaths_train, self.gt_file_path)
+        test_cohort = Cohort(filepaths_test, self.gt_file_path)
         print("Training set: %d class 0, %d class 1" % train_cohort.class_counts())
         print("Testing set:  %d class 0, %d class 1" % test_cohort.class_counts())
 
