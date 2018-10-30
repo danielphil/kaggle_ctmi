@@ -116,7 +116,7 @@ venv.bak/
 **/.idea/**/dbnavigator.xml
 
 # Added by Ian
-**/*.dcm
+ShaipWorkspace/
 **/*.png
 gash/
 models/
