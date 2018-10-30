@@ -93,11 +93,13 @@ if __name__ == '__main__':
     # First for the main workspace, with all 100 images
     do_it('ShaipWorkspace')
 
-    # Then for unit tests we select 8 + 8 datasets, balancing ct and cta
-    unit_test_ids_1 = ['ID_000' + str(i) for i in range(8)]
-    unit_test_ids_0 = ['ID_005' + str(i) for i in range(8)]
-    unit_test_ids = unit_test_ids_1 + unit_test_ids_0
-    print(unit_test_ids)
-    assert len(unit_test_ids) == 16
+    if False:
+        # Following only used by Ian to create the ShaipUnittestWorkspace, which is commited.
+        # Then for unit tests we select 8 + 8 datasets, balancing ct and cta
+        unit_test_ids_1 = ['ID_000' + str(i) for i in range(8)]
+        unit_test_ids_0 = ['ID_005' + str(i) for i in range(8)]
+        unit_test_ids = unit_test_ids_1 + unit_test_ids_0
+        print(unit_test_ids)
+        assert len(unit_test_ids) == 16
 
-    do_it('ShaipUnittestWorkspace', unit_test_ids)
+        do_it('ShaipUnittestWorkspace', unit_test_ids)
