@@ -10,7 +10,7 @@ Assuming a basic python 3.5 installation, roughly:
 * clone into directory `kaggle_ctmi/`
 * `cd kaggle.ctmi`
 * `pip install -r requirments.txt`  (or use a virtual environment)
-* `export PYTHONPATH=./kaggle_ctmi` (that's the inner 'kaggle_ctmi)
+* `export PYTHONPATH=.` (not sure why/if this is necessary)
 * `pytest` - all unit tests should pass out of the box.
 * Setup the 'real'  'ShaipWorkspace':
   * `mkdir -p ShaipWorkspace/inputs`
