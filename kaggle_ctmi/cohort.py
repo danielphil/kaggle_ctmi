@@ -25,8 +25,9 @@ class ShaipWorkspace(object):
     """
 
     def __init__(self, rootdir='ShaipUnittestWorkspace/'):
-        self.data_dir =        rootdir + 'inputs/data/'       # Will change
-        self.groundtruth_dir = rootdir + 'inputs/groundtruth/'     # Not yet used
+        """ The default parameter case is used for unit tests """
+        self.data_dir =        rootdir + 'inputs/data/'
+        self.groundtruth_dir = rootdir + 'inputs/groundtruth/'
         self.results_dir =     rootdir + 'outputs/results/'
         self.models_dir =      rootdir + 'outputs/models/'
         self.tensorboad_dir =  rootdir + 'outputs/tensorboard/'    # Not yet used
@@ -61,7 +62,7 @@ class Cohort(object):
         if only_these_ids is None:
             # Scan the shaip inputs folder to find ids
             dicompaths = glob(os.path.join(shaip.data_dir, '*'))
-            self.ids = [p[-7:] for p in dicompaths]
+            self.ids = [os.path.basename(p) for p in dicompaths]
         else:
             self.ids = only_these_ids
 
@@ -69,13 +70,6 @@ class Cohort(object):
 
         # Private cache storage
         self._images = self._dicoms = self._groundtruth = None
-
-    @classmethod
-    def from_shaip_workspace(cls, shaip):
-        """ This constructor scans the data path to find what data is present and
-        setup a list and dictionary of dataset ids and paths.  It does not *read*
-        the data"""
-        return Cohort(shaip)
 
     @property
     def dicoms(self):
@@ -91,14 +85,6 @@ class Cohort(object):
         if self._images is None:
             self._images = [dcm.pixel_array for dcm in self.dicoms]
         return self._images
-
-    @staticmethod
-    def _read_contrast_gt(gtpath):
-        """ Read the file in the groundtruth folder and return its GT status"""
-        with open(gtpath, 'r') as f:
-            s = f.read()
-            assert s in ('ct\n', 'cta\n')
-            return 0 if s == 'ct\n' else 1
 
     @property
     def groundtruth(self):
@@ -129,7 +115,10 @@ class Cohort(object):
 
         return train_cohort, test_cohort
 
-
-# noinspection PyTypeChecker
-
-
+    @staticmethod
+    def _read_contrast_gt(gtpath):
+        """ Read the file in the groundtruth folder and return its GT status"""
+        with open(gtpath, 'r') as f:
+            s = f.read()
+            assert s in ('ct\n', 'cta\n')
+            return 0 if s == 'ct\n' else 1

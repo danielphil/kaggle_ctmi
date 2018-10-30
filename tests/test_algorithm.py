@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 
 def test__preprocess_one_dicom():
     algorithm = Algorithm()
-    cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
+    cohort = Cohort(ShaipWorkspace())
     dcm1 = cohort.dicoms[0]
     image = algorithm._preprocess_one_dicom(dcm1)
     assert image.shape == Algorithm.imshape
@@ -30,7 +30,7 @@ def test__preprocess_one_dicom():
 
 def test_preprocessed_cohort_accessors():
     algorithm = Algorithm()
-    cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
+    cohort = Cohort(ShaipWorkspace())
     ppimages = algorithm.preprocessed_images(cohort)
     assert len(ppimages) == cohort.size
 
@@ -49,7 +49,7 @@ def test_data_scaling():
 
 def test_train():
     algorithm = Algorithm()
-    cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
+    cohort = Cohort(ShaipWorkspace())
     model = algorithm.train(cohort)
     assert model is not None
 

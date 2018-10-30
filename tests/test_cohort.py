@@ -13,18 +13,18 @@ def test_dicom_path_from_id():
 def test_gt_path_from_id():
     shaip = ShaipWorkspace()
     path = shaip.gt_path_from_id('ID_0012')
-    print(path)
+    assert path == 'ShaipUnittestWorkspace/inputs/groundtruth/ID_0012/ID_0012.txt'
 
 
 def test_read_contrast_gt():
-    cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
+    cohort = Cohort(ShaipWorkspace())
     gtpath = 'ShaipUnittestWorkspace/inputs/groundtruth/ID_0001/ID_0001.txt'
     gt = cohort._read_contrast_gt(gtpath)
     assert gt == 1
 
 
-def test_from_shaip_workspace():
-    cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
+def test_init():
+    cohort = Cohort(ShaipWorkspace())
     assert len(cohort.ids) == 16
     assert len(cohort.ids[0]) == 7 and cohort.ids[0][:3] == 'ID_'
 
@@ -42,12 +42,12 @@ def cohort_accessors_test_helper(cohort):
 
 
 def test_cohort_accessors():
-    cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
+    cohort = Cohort(ShaipWorkspace())
     cohort_accessors_test_helper(cohort)
 
 
 def test_split_cohort_train_test():
-    cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
+    cohort = Cohort(ShaipWorkspace())
     test_prop = 0.25
     train_cohort, test_cohort = cohort.split_cohort_train_test(test_prop)
     n = cohort.size

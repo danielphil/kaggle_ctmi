@@ -17,7 +17,7 @@ def test_generate_static_index_html():
 def test_explore_cohort():
     with TemporaryDirectory() as tmp_dir:
         results = Results(tmp_dir)
-        cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
+        cohort = Cohort(ShaipWorkspace())
         savefilename = 'cohort_table.png'
         results.explore_cohort(cohort, savefilename)
         assert os.path.exists(tmp_dir + savefilename)
@@ -26,7 +26,7 @@ def test_explore_cohort():
 def test_show_images():
     with TemporaryDirectory() as tmp_dir:
         results = Results(tmp_dir)
-        cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
+        cohort = Cohort(ShaipWorkspace())
         predictions = [0] * cohort.size
         savefilename = 'image_gallery.png'
         results.show_images(cohort, predictions, savefilename)

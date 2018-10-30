@@ -23,7 +23,7 @@ class Experiment(object):
 
     def main(self):
         """ Main Experiment entry point """
-        cohort = Cohort.from_shaip_workspace(self.shaip)
+        cohort = Cohort(self.shaip)
 
         train_cohort, test_cohort = cohort.split_cohort_train_test(0.3)
 
