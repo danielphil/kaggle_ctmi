@@ -2,8 +2,8 @@
 import os
 from tempfile import TemporaryDirectory
 
-from cohort import Cohort, ShaipWorkspace
-from results import Results
+from kaggle_ctmi.cohort import Cohort, ShaipWorkspace
+from kaggle_ctmi.results import Results
 
 
 def test_generate_static_index_html():

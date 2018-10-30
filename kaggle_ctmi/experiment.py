@@ -6,9 +6,9 @@ import time
 
 import numpy as np
 
-from algorithm import Algorithm
-from cohort import ShaipWorkspace, Cohort
-from results import Results
+from kaggle_ctmi.algorithm import Algorithm
+from kaggle_ctmi.cohort import ShaipWorkspace, Cohort
+from kaggle_ctmi.results import Results
 
 
 class Experiment(object):

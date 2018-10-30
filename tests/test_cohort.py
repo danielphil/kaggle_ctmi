@@ -1,7 +1,7 @@
 
 import numpy as np
 
-from cohort import Cohort, ShaipWorkspace
+from kaggle_ctmi.cohort import Cohort, ShaipWorkspace
 
 
 def test_dicom_path_from_id():

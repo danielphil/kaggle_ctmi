@@ -8,8 +8,8 @@ import numpy as np
 from keras.layers import Dense
 from keras.models import Sequential
 
-from algorithm import Algorithm, AccuracyHistory
-from cohort import Cohort, ShaipWorkspace
+from kaggle_ctmi.algorithm import Algorithm, AccuracyHistory
+from kaggle_ctmi.cohort import Cohort, ShaipWorkspace
 
 import matplotlib
 matplotlib.use('Agg')
