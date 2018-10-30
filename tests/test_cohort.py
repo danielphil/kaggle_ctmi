@@ -1,21 +1,37 @@
 
-import os
-
 import numpy as np
 
 from cohort import Cohort, ShaipWorkspace
+
+
+def test_dicom_path_from_id():
+    shaip = ShaipWorkspace()
+    path = shaip.dicom_path_from_id('ID_0012')
+    print(path)
+
+
+def test_gt_path_from_id():
+    shaip = ShaipWorkspace()
+    path = shaip.gt_path_from_id('ID_0012')
+    print(path)
+
+
+def test_read_contrast_gt():
+    cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
+    gtpath = 'ShaipUnittestWorkspace/inputs/groundtruth/ID_0001/ID_0001.txt'
+    gt = cohort._read_contrast_gt(gtpath)
+    assert gt == 1
 
 
 def test_from_shaip_workspace():
     cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
     assert len(cohort.ids) == 16
     assert len(cohort.ids[0]) == 7 and cohort.ids[0][:3] == 'ID_'
-    assert os.path.exists(cohort.filepaths[0])
 
 
 def cohort_accessors_test_helper(cohort):
     assert len(cohort.dicoms) == len(cohort.ids) == len(cohort.images) == len(
-        cohort.groundtruth) == len(cohort.groundtruth) == len(cohort.filepaths) == cohort.size
+        cohort.groundtruth) == len(cohort.groundtruth) == cohort.size
     assert all(['PixelData' in dcm for dcm in cohort.dicoms])
     assert len(cohort.images) == len(cohort.ids)
     assert all([im.shape == (512, 512) for im in cohort.images])
@@ -28,12 +44,6 @@ def cohort_accessors_test_helper(cohort):
 def test_cohort_accessors():
     cohort = Cohort.from_shaip_workspace(ShaipWorkspace())
     cohort_accessors_test_helper(cohort)
-
-
-def test__filename_to_contrast_gt():
-    fname = 'ID_0087_AGE_0044_CONTRAST_0_CT.dcm'
-    gt = Cohort._filename_to_contrast_gt(fname)
-    assert gt == 0
 
 
 def test_split_cohort_train_test():

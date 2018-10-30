@@ -117,7 +117,7 @@ class Results(object):
             pltim = ax.imshow(im)
             title = "%s GT=%d" % (cohort.ids[ix], gt)
             if predictions is not None:
-                title += "Pr=%d" % predictions[ix]
+                title += "; Pr=%d" % predictions[ix]
             ax.set_title(title)
             fig.colorbar(pltim, ax=ax)
 

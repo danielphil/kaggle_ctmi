@@ -25,7 +25,7 @@ class ShaipWorkspace(object):
     """
 
     def __init__(self, rootdir='ShaipUnittestWorkspace/'):
-        self.data_dir =        rootdir + 'inputs/dicomdata/'       # Will change
+        self.data_dir =        rootdir + 'inputs/data/'       # Will change
         self.groundtruth_dir = rootdir + 'inputs/groundtruth/'     # Not yet used
         self.results_dir =     rootdir + 'outputs/results/'
         self.models_dir =      rootdir + 'outputs/models/'
@@ -39,6 +39,12 @@ class ShaipWorkspace(object):
                 print("Working directory is %s", os.getcwd())
                 assert False
 
+    def dicom_path_from_id(self, id_):
+        return os.path.join(self.data_dir, id_, id_ + '.dcm')
+
+    def gt_path_from_id(self, id_):
+        return os.path.join(self.groundtruth_dir, id_, id_ + '.txt')
+
 
 class Cohort(object):
     """ 
@@ -47,11 +53,18 @@ class Cohort(object):
     Accessors generally present lazy evaluation semantics.
     """
 
-    def __init__(self, filepaths):
-        """ This constructor takes a list of filepaths to DICOM files.  It can figure
-        out groundtruth (contrast or not) from the filename"""
-        self.filepaths = filepaths
-        self.ids = [os.path.basename(fp)[:7] for fp in self.filepaths]
+    def __init__(self, shaip, only_these_ids=None):
+        """ Create a cohort from the given shaip directory structure.  If 2nd parameter
+        is given it is used to select only those given dataset ids.
+        """
+        self.shaip = shaip
+        if only_these_ids is None:
+            # Scan the shaip inputs folder to find ids
+            dicompaths = glob(os.path.join(shaip.data_dir, '*'))
+            self.ids = [p[-7:] for p in dicompaths]
+        else:
+            self.ids = only_these_ids
+
         self.size = len(self.ids)
 
         # Private cache storage
@@ -62,15 +75,14 @@ class Cohort(object):
         """ This constructor scans the data path to find what data is present and
         setup a list and dictionary of dataset ids and paths.  It does not *read*
         the data"""
-        filepaths = glob(shaip.data_dir + '*.dcm')
-        filepaths.sort()  # ensure order is deterministic
-        return cls(filepaths)
+        return Cohort(shaip)
 
     @property
     def dicoms(self):
         """ Lazily read and return a list of dicom objects in the same order as self.ids """
         if self._dicoms is None:
-            self._dicoms = [pydicom.dcmread(fp) for fp in self.filepaths]
+            self._dicoms = [pydicom.dcmread(self.shaip.dicom_path_from_id(id_))
+                            for id_ in self.ids]
         return self._dicoms
 
     @property
@@ -81,19 +93,19 @@ class Cohort(object):
         return self._images
 
     @staticmethod
-    def _filename_to_contrast_gt(fname):
-        """ Filenames look like this: "ID_0087_AGE_0044_CONTRAST_0_CT.dcm """
-        assert fname[17:25] == 'CONTRAST'
-        c = fname[26]
-        assert c in ('0', '1')
-        return int(c)
+    def _read_contrast_gt(gtpath):
+        """ Read the file in the groundtruth folder and return its GT status"""
+        with open(gtpath, 'r') as f:
+            s = f.read()
+            assert s in ('ct\n', 'cta\n')
+            return 0 if s == 'ct\n' else 1
 
     @property
     def groundtruth(self):
         """ Return a list of ground-truth values as {0, 1} integers in the same order as self.ids"""
         if self._groundtruth is None:
-            self._groundtruth = [Cohort._filename_to_contrast_gt(os.path.basename(fp)) for fp in
-                                 self.filepaths]
+            self._groundtruth = [Cohort._read_contrast_gt(self.shaip.gt_path_from_id(id_))
+                                 for id_ in self.ids]
         return self._groundtruth
 
     def class_counts(self):
@@ -105,13 +117,13 @@ class Cohort(object):
     def split_cohort_train_test(self, test_size=0.3):
         """ Create two cohorts from this one, for train and test.
         Share image objects"""
-        filepaths, y_data = self.filepaths, self.groundtruth,
-        filepaths_train, filepaths_test = \
-            train_test_split(filepaths,
+        ids, y_data = self.ids, self.groundtruth,
+        ids_train, ids_test = \
+            train_test_split(ids,
                              stratify=y_data, test_size=test_size, shuffle=True, random_state=43)
 
-        train_cohort = Cohort(filepaths_train)
-        test_cohort = Cohort(filepaths_test)
+        train_cohort = Cohort(self.shaip, ids_train)
+        test_cohort = Cohort(self.shaip, ids_test)
         print("Training set: %d class 0, %d class 1" % train_cohort.class_counts())
         print("Testing set:  %d class 0, %d class 1" % test_cohort.class_counts())
 
