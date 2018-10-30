@@ -12,11 +12,6 @@ import os
 import shutil
 from glob import glob
 
-DICOM_DIR = 'dicom_dir'
-SHAIP_INPUT_DIR = 'ShaipWorkspace/inputs'
-GT_DIR = 'ShaipWorkspace/inputs/groundtruth'
-DATA_DIR = 'ShaipWorkspace/inputs/data'
-
 
 def _filename_to_contrast_gtstring(fname):
     """ Filenames look like this: "ID_0087_AGE_0044_CONTRAST_0_CT.dcm """
@@ -35,16 +30,21 @@ DATA_DIR = 'ShaipWorkspace/inputs/groundtruth'T_0_CT.dcm """
     return fname[:7]
 
 
-def main():
-    assert os.path.isdir(DICOM_DIR)
-    assert os.path.isdir(SHAIP_INPUT_DIR)
+def do_it(shaip_root, only_these_ids=None):
+    dicom_dir = 'dicom_dir'
+    shaip_input_dir = os.path.join(shaip_root, 'inputs')
+    gt_dir = os.path.join(shaip_root, 'inputs/groundtruth')
+    data_dir = os.path.join(shaip_root, 'inputs/data')
 
-    assert not os.path.exists(GT_DIR)
-    assert not os.path.exists(DATA_DIR)
+    assert os.path.isdir(dicom_dir)
+    assert os.path.isdir(shaip_input_dir)
+
+    assert not os.path.exists(gt_dir)
+    assert not os.path.exists(data_dir)
 
     # Create the directories
-    os.makedirs(GT_DIR)
-    os.makedirs(DATA_DIR)
+    os.makedirs(gt_dir)
+    os.makedirs(data_dir)
 
     # Glob the datasets
     datasets_paths = glob('dicom_dir/*.dcm')
@@ -57,15 +57,18 @@ def main():
         print("Processing", dpath)
         _, dname = os.path.split(dpath)
         id_ = _filename_to_id(dname)
+        if (only_these_ids is not None) and (id_ not in only_these_ids):
+            print('Skippling...', id_)
+            continue
         gt = _filename_to_contrast_gtstring(dname)
-        gtpath = os.path.join(GT_DIR, id_)
-        datapath = os.path.join(DATA_DIR, id_)
+        gtpath = os.path.join(gt_dir, id_)
+        datapath = os.path.join(data_dir, id_)
 
         assert not os.path.exists(gtpath)
         assert not os.path.exists(datapath)
 
-        this_gt_dir = os.path.join(GT_DIR, id_)
-        this_data_dir = os.path.join(DATA_DIR, id_)
+        this_gt_dir = os.path.join(gt_dir, id_)
+        this_data_dir = os.path.join(data_dir, id_)
         this_gt_path = os.path.join(this_gt_dir, id_ + '.txt')
         this_data_path = os.path.join(this_data_dir, id_ + '.dcm')
 
@@ -87,4 +90,14 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # First for the main workspace, with all 100 images
+    do_it('ShaipWorkspace')
+
+    # Then for unit tests we select 8 + 8 datasets, balancing ct and cta
+    unit_test_ids_1 = ['ID_000' + str(i) for i in range(8)]
+    unit_test_ids_0 = ['ID_005' + str(i) for i in range(8)]
+    unit_test_ids = unit_test_ids_1 + unit_test_ids_0
+    print(unit_test_ids)
+    assert len(unit_test_ids) == 16
+
+    do_it('ShaipUnittestWorkspace', unit_test_ids)
