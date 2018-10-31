@@ -3,6 +3,8 @@ A simple solution to CT / CTA detection based in Kaggle datasets.
 """
 
 import time
+import logging
+import os
 
 import numpy as np
 
@@ -21,32 +23,61 @@ class Experiment(object):
         self.algorithm = Algorithm()
         self.results = Results(self.shaip.results_dir)
 
+    def setup_logging(self):
+        # see https://docs.python.org/2.4/lib/multiple-destinations.html
+
+        # Set up logging to file
+        logfile_path = os.path.join(self.shaip.results_dir, 'kaggle-ctmi.log')
+        logger = logging.getLogger('')
+        logger.setLevel(logging.DEBUG)
+
+        # Define a Handler which writes INFO messages or higher to the sys.stderr
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        simple_formatter = logging.Formatter('%(levelname)-8s %(message)s')
+        console_handler.setFormatter(simple_formatter)
+
+        logfile_handler = logging.FileHandler(filename=logfile_path)
+        logfile_handler.setLevel(logging.DEBUG)
+        verbose_formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            datefmt='%d/%m/%y %H:%M')
+        logfile_handler.setFormatter(verbose_formatter)
+
+        # add the handlers to the logger
+        logger.addHandler(console_handler)
+        logger.addHandler(logfile_handler)
+
     def main(self):
         """ Main Experiment entry point """
-        print("Loading data...")
+
+        self.setup_logging()
+        start_time = time.time()
+
+        logging.info("Starting Kaggle-CTMI Experiment\n")
+
+        logging.info("Loading data...")
         cohort = Cohort(self.shaip)
         train_cohort, test_cohort = cohort.split_cohort_train_test(0.3)
 
-        print("Training...")
+        logging.info("Training...")
         model = self.algorithm.train(train_cohort)
 
         self.algorithm.save_model(model, self.shaip.models_dir + 'model')
 
-        print("Prediction...")
+        logging.info("Prediction...")
         test_predictions = self.algorithm.predict(model, test_cohort)
 
-        print("Generating results to ShaipWorkspace/outputs/results/index.html...")
+        logging.info("Generating results to ShaipWorkspace/outputs/results/index.html...")
         self.results.show_results(train_cohort, test_cohort,
                                   self.algorithm.history, test_predictions)
+
+        logging.info("Kaggle-CTMI Experiment done in %4.1f seconds.\n", (time.time() - start_time))
 
 
 # Lets do it!
 if __name__ == '__main__':
-    print("Starting Kaggle-CTMI Experiment\n")
     np.random.seed(42)
-    start_time = time.time()
 
     expt = Experiment('ShaipWorkspace/')
     expt.main()
-
-    print("Done in %4.1f seconds" % (time.time() - start_time))

@@ -2,16 +2,16 @@
 A maximally simple solution to CT / CTA detection!
 """
 
+import logging
 import os
 
 import keras
-
+import matplotlib
 import numpy as np
 from keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 from keras.models import Sequential, model_from_json
 from skimage.transform import downscale_local_mean
 
-import matplotlib
 matplotlib.use('Agg')
 # noinspection PyPep8
 import matplotlib.pyplot as plt
@@ -42,7 +42,7 @@ class Algorithm(object):
         image = np.array(image, dtype=np.float32)
 
         # It seems that padding value lies!  So we'll just clamp image values and hope for the best!
-        # print("Image (min,max) = (%6.1f, %6.1f)" % (np.min(image), np.max(image)))
+        logging.debug("Image (min,max) = (%6.1f, %6.1f)", np.min(image), np.max(image))
         clip_min = -200.0
         clip_max = 1000.0
         image[image < clip_min] = clip_min
@@ -59,7 +59,7 @@ class Algorithm(object):
 
     def preprocessed_images(self, cohort):
         """ Apply preprocessing - mainly conversion to HU """
-        print("Preprocessing...")
+        logging.info("Preprocessing...")
         result = [self._preprocess_one_dicom(dcm) for dcm in cohort.dicoms]
         return result
 
@@ -141,7 +141,7 @@ class Algorithm(object):
         with open(fname + '.json', 'w') as json_file:
             json_file.write(model_json)
         model.save_weights(fname + '.h5')
-        print("Model saved to %s[.json,.h5] files" % fname)
+        logging.info("Model saved to %s[.json,.h5] files", fname)
 
     def load_model(self, fname):
         """ Load a model from fname.json and fname.h5, and return it.
