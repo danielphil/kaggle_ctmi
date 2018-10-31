@@ -110,8 +110,8 @@ class Cohort(object):
 
         train_cohort = Cohort(self.shaip, ids_train)
         test_cohort = Cohort(self.shaip, ids_test)
-        print("Training set: %d class 0, %d class 1" % train_cohort.class_counts())
-        print("Testing set:  %d class 0, %d class 1" % test_cohort.class_counts())
+        # print("Training set: %d class 0, %d class 1" % train_cohort.class_counts())
+        # print("Testing set:  %d class 0, %d class 1" % test_cohort.class_counts())
 
         return train_cohort, test_cohort
 

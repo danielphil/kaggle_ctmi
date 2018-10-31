@@ -59,6 +59,7 @@ class Algorithm(object):
 
     def preprocessed_images(self, cohort):
         """ Apply preprocessing - mainly conversion to HU """
+        print("Preprocessing...")
         result = [self._preprocess_one_dicom(dcm) for dcm in cohort.dicoms]
         return result
 
@@ -81,7 +82,7 @@ class Algorithm(object):
         # Train and save the model
         model.fit(
             x_data, y_data,
-            batch_size=20, shuffle=True, epochs=15, verbose=2,
+            batch_size=20, shuffle=True, epochs=15, verbose=0,
             validation_split=0.2, callbacks=[self.history])
 
         return model
@@ -105,10 +106,10 @@ class Algorithm(object):
         x_data = np.array(images).reshape(-1, siz[0], siz[1], 1)
         x_data = x_data.astype(np.float32)
         x_data = (x_data + 100) / 150.0
-        mean, sd = np.mean(x_data), np.std(x_data)
-        min_, max_ = np.min(x_data), np.max(x_data)
-        print("data_scaling: shape:", x_data.shape, "min,max:",
-              (min_, max_), "mean,sd:", (mean, sd))
+        # mean, sd = np.mean(x_data), np.std(x_data)
+        # min_, max_ = np.min(x_data), np.max(x_data)
+        # print("data_scaling: shape:", x_data.shape, "min,max:",
+        #      (min_, max_), "mean,sd:", (mean, sd))
 
         return x_data
 

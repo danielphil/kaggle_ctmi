@@ -93,7 +93,9 @@ if __name__ == '__main__':
     # First for the main workspace, with all 100 images
     do_it('ShaipWorkspace')
 
-    if False:
+    prepare_unittest_workspace = False
+
+    if prepare_unittest_workspace:
         # Following only used by Ian to create the ShaipUnittestWorkspace, which is commited.
         # Then for unit tests we select 8 + 8 datasets, balancing ct and cta
         unit_test_ids_1 = ['ID_000' + str(i) for i in range(8)]

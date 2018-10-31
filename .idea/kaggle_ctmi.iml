@@ -4,6 +4,7 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/ShaipUnittestWorkspace" />
       <excludeFolder url="file://$MODULE_DIR$/ShaipWorkspace" />
+      <excludeFolder url="file://$MODULE_DIR$/dicom_dir" />
       <excludeFolder url="file://$MODULE_DIR$/gash" />
       <excludeFolder url="file://$MODULE_DIR$/models" />
     </content>

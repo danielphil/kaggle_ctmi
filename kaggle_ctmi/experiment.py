@@ -23,22 +23,26 @@ class Experiment(object):
 
     def main(self):
         """ Main Experiment entry point """
+        print("Loading data...")
         cohort = Cohort(self.shaip)
-
         train_cohort, test_cohort = cohort.split_cohort_train_test(0.3)
 
+        print("Training...")
         model = self.algorithm.train(train_cohort)
 
         self.algorithm.save_model(model, self.shaip.models_dir + 'model')
 
+        print("Prediction...")
         test_predictions = self.algorithm.predict(model, test_cohort)
 
+        print("Generating results to ShaipWorkspace/outputs/results/index.html...")
         self.results.show_results(train_cohort, test_cohort,
                                   self.algorithm.history, test_predictions)
 
 
 # Lets do it!
 if __name__ == '__main__':
+    print("Starting Kaggle-CTMI Experiment\n")
     np.random.seed(42)
     start_time = time.time()
 

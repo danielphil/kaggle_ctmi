@@ -5,7 +5,7 @@ import os
 
 import numpy as np
 import pandas as pd
-from IPython.core.display import display
+# from IPython.core.display import display
 from sklearn.metrics import accuracy_score
 
 # Set the 'Agg' matplotlib backend to avoid plots appearing on the display (we only want them
@@ -100,9 +100,9 @@ class Results(object):
 
             df.loc[ix] = row
 
-        display(df.describe(include='all'))
+        # display(df.describe(include='all'))
         # noinspection PyTypeChecker
-        display(df)
+        # display(df)
         if savefilename is not None:
             with open(self.results_dir + savefilename, 'w') as fp:
                 df.to_html(fp)
@@ -141,7 +141,7 @@ class Results(object):
 
         # Output some results
         result = 'Test accuracy: %5.3f' % score
-        print(result)
+        # print(result)
 
         # Render the training plot to a png
         history.plot_training(os.path.join(self.results_dir, 'training_plot.png'))
