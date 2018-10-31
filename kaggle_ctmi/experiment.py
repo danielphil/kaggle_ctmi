@@ -48,6 +48,10 @@ class Experiment(object):
         logger.addHandler(console_handler)
         logger.addHandler(logfile_handler)
 
+        # Silence matplotlib debug messages
+        mpl_logger = logging.getLogger('matplotlib.font_manager')
+        mpl_logger.setLevel(logging.WARNING)
+
     def main(self):
         """ Main Experiment entry point """
 
@@ -56,16 +60,17 @@ class Experiment(object):
 
         logging.info("Starting Kaggle-CTMI Experiment\n")
 
-        logging.info("Loading data...")
+        logging.info("Loading data and groundtruth...")
         cohort = Cohort(self.shaip)
         train_cohort, test_cohort = cohort.split_cohort_train_test(0.3)
+        logging.info("Loaded %d datasets", cohort.size)
 
-        logging.info("Training...")
+        logging.info("Training on %d datasets...", train_cohort.size)
         model = self.algorithm.train(train_cohort)
 
         self.algorithm.save_model(model, self.shaip.models_dir + 'model')
 
-        logging.info("Prediction...")
+        logging.info("Prediction on %d datasets...", test_cohort.size)
         test_predictions = self.algorithm.predict(model, test_cohort)
 
         logging.info("Generating results to ShaipWorkspace/outputs/results/index.html...")

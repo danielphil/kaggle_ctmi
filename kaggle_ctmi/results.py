@@ -2,6 +2,7 @@
 A maximally simple solution to CT / CTA detection!
 """
 import os
+import logging
 
 import numpy as np
 import pandas as pd
@@ -141,7 +142,7 @@ class Results(object):
 
         # Output some results
         result = 'Test accuracy: %5.3f' % score
-        # print(result)
+        logging.info(result)
 
         # Render the training plot to a png
         history.plot_training(os.path.join(self.results_dir, 'training_plot.png'))

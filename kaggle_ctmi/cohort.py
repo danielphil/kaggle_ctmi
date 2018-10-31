@@ -3,6 +3,7 @@ A maximally simple solution to CT / CTA detection!
 """
 
 import os
+import logging
 from collections import Counter
 from glob import glob
 
@@ -36,8 +37,8 @@ class ShaipWorkspace(object):
     def check(self):
         for d in [self.data_dir, self.results_dir]:
             if not os.path.isdir(d):
-                print("SHAIP directory %s is not found" % d)
-                print("Working directory is %s", os.getcwd())
+                logging.error("SHAIP directory %s is not found" % d)
+                logging.info("Working directory is %s", os.getcwd())
                 assert False
 
     def dicom_path_from_id(self, id_):
@@ -110,8 +111,8 @@ class Cohort(object):
 
         train_cohort = Cohort(self.shaip, ids_train)
         test_cohort = Cohort(self.shaip, ids_test)
-        # print("Training set: %d class 0, %d class 1" % train_cohort.class_counts())
-        # print("Testing set:  %d class 0, %d class 1" % test_cohort.class_counts())
+        logging.debug("Training set: %d class 0, %d class 1" % train_cohort.class_counts())
+        logging.debug("Testing set:  %d class 0, %d class 1" % test_cohort.class_counts())
 
         return train_cohort, test_cohort
 

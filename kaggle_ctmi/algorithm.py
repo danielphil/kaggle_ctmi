@@ -42,7 +42,7 @@ class Algorithm(object):
         image = np.array(image, dtype=np.float32)
 
         # It seems that padding value lies!  So we'll just clamp image values and hope for the best!
-        logging.debug("Image (min,max) = (%6.1f, %6.1f)", np.min(image), np.max(image))
+        # logging.debug("Image (min,max) = (%6.1f, %6.1f)", np.min(image), np.max(image))
         clip_min = -200.0
         clip_max = 1000.0
         image[image < clip_min] = clip_min
