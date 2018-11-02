@@ -61,13 +61,12 @@ def test_build_model():
 
 
 def test_model_save_and_load():
-    algorithm = Algorithm()
     model = Sequential()
     model.add(Dense(10, activation='relu', input_shape=(5, 1)))
     with TemporaryDirectory() as dir_name:
         temp_file_path = os.path.join(dir_name, 'test_model')
-        algorithm.save_model(model, temp_file_path)
-        _ = algorithm.load_model(temp_file_path)
+        Algorithm.save_model(model, temp_file_path)
+        _ = Algorithm.load_model(temp_file_path)
 
 
 def test_accuracyhistory():

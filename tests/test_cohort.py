@@ -18,8 +18,8 @@ def test_gt_path_from_id():
 
 def test_read_contrast_gt():
     cohort = Cohort(ShaipWorkspace())
-    gtpath = 'ShaipUnittestWorkspace/inputs/groundtruth/ID_0001/ID_0001.txt'
-    gt = cohort._read_contrast_gt(gtpath)
+    gt_path = 'ShaipUnittestWorkspace/inputs/groundtruth/ID_0001/ID_0001.txt'
+    gt = cohort._read_contrast_gt(gt_path)
     assert gt == 1
 
 

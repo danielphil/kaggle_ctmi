@@ -53,7 +53,7 @@ class Algorithm(object):
 
         # Finally, downscale !
 
-        image = downscale_local_mean(image, self.downsample_factor)
+        image = downscale_local_mean(image, Algorithm.downsample_factor)
 
         return image
 
@@ -84,6 +84,8 @@ class Algorithm(object):
             x_data, y_data,
             batch_size=20, shuffle=True, epochs=15, verbose=0,
             validation_split=0.2, callbacks=[self.history])
+
+        model.summary(print_fn=logging.debug)
 
         return model
 
@@ -128,13 +130,14 @@ class Algorithm(object):
 
         return model
 
-    def save_model(self, model, fname):
+    @staticmethod
+    def save_model(model, fname):
         """ Save model and wieghts to fname and fname.h5 files respectively
         fname can include a directory which will be created if it doesn't exist"""
 
         directory = os.path.dirname(fname)
         if directory and not os.path.isdir(directory):
-            print("Creating directory %s" % directory)
+            logging.warning("Creating directory %s" % directory)
             os.makedirs(directory)
 
         model_json = model.to_json()
@@ -143,7 +146,8 @@ class Algorithm(object):
         model.save_weights(fname + '.h5')
         logging.info("Model saved to %s[.json,.h5] files", fname)
 
-    def load_model(self, fname):
+    @staticmethod
+    def load_model(fname):
         """ Load a model from fname.json and fname.h5, and return it.
         (Note that the loaded model must be compiled before use)"""
         # load json and create model
@@ -173,7 +177,7 @@ class AccuracyHistory(keras.callbacks.Callback):
         self.acc.append(logs.get('acc'))
         self.val_acc.append(logs.get('val_acc'))
 
-    def plot_training(self, savefilepath):
+    def plot_training(self, save_file_path):
         epochs = range(1, len(self.acc) + 1)
         plt.figure()
         plt.plot(epochs, self.acc, label='Train')
@@ -183,10 +187,10 @@ class AccuracyHistory(keras.callbacks.Callback):
         plt.ylabel('Accuracy')
         plt.legend()
 
-        if savefilepath is not None:
-            _, extension = os.path.splitext(savefilepath)
+        if save_file_path is not None:
+            _, extension = os.path.splitext(save_file_path)
             assert extension in ('.png', '.jpeg')
-            plt.savefig(savefilepath)
+            plt.savefig(save_file_path)
             plt.show()
         else:
             plt.show()

@@ -2,9 +2,9 @@
 A simple solution to CT / CTA detection based in Kaggle datasets.
 """
 
-import time
 import logging
 import os
+import time
 
 import numpy as np
 
@@ -26,31 +26,34 @@ class Experiment(object):
     def setup_logging(self):
         # see https://docs.python.org/2.4/lib/multiple-destinations.html
 
-        # Set up logging to file
-        logfile_path = os.path.join(self.shaip.results_dir, 'kaggle-ctmi.log')
         logger = logging.getLogger('')
         logger.setLevel(logging.DEBUG)
 
-        # Define a Handler which writes INFO messages or higher to the sys.stderr
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(logging.INFO)
-        simple_formatter = logging.Formatter('%(levelname)-8s %(message)s')
-        console_handler.setFormatter(simple_formatter)
+        if len(logger.handlers) <= 1:
+            # avoid double setup which can happen in unit tests
 
-        logfile_handler = logging.FileHandler(filename=logfile_path)
-        logfile_handler.setLevel(logging.DEBUG)
-        verbose_formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            datefmt='%d/%m/%y %H:%M')
-        logfile_handler.setFormatter(verbose_formatter)
+            # Define a Handler which writes INFO messages or higher to the sys.stderr
+            console_handler = logging.StreamHandler()
+            console_handler.setLevel(logging.INFO)
+            simple_formatter = logging.Formatter('%(levelname)-8s %(message)s')
+            console_handler.setFormatter(simple_formatter)
 
-        # add the handlers to the logger
-        logger.addHandler(console_handler)
-        logger.addHandler(logfile_handler)
+            # Set up logging to file for DEBUG messages or higher
+            logfile_path = os.path.join(self.shaip.results_dir, 'kaggle-ctmi.log')
+            logfile_handler = logging.FileHandler(filename=logfile_path)
+            logfile_handler.setLevel(logging.DEBUG)
+            verbose_formatter = logging.Formatter(
+                '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                datefmt='%d/%m/%y %H:%M')
+            logfile_handler.setFormatter(verbose_formatter)
 
-        # Silence matplotlib debug messages
-        mpl_logger = logging.getLogger('matplotlib.font_manager')
-        mpl_logger.setLevel(logging.WARNING)
+            # add the handlers to the logger
+            logger.addHandler(console_handler)
+            logger.addHandler(logfile_handler)
+
+            # Silence matplotlib debug messages
+            mpl_logger = logging.getLogger('matplotlib.font_manager')
+            mpl_logger.setLevel(logging.WARNING)
 
     def main(self):
         """ Main Experiment entry point """
@@ -68,7 +71,7 @@ class Experiment(object):
         logging.info("Training on %d datasets...", train_cohort.size)
         model = self.algorithm.train(train_cohort)
 
-        self.algorithm.save_model(model, self.shaip.models_dir + 'model')
+        Algorithm.save_model(model, self.shaip.models_dir + 'model')
 
         logging.info("Prediction on %d datasets...", test_cohort.size)
         test_predictions = self.algorithm.predict(model, test_cohort)

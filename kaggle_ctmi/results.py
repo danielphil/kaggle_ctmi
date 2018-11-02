@@ -1,17 +1,16 @@
 """
 A maximally simple solution to CT / CTA detection!
 """
-import os
 import logging
-
-import numpy as np
-import pandas as pd
-# from IPython.core.display import display
-from sklearn.metrics import accuracy_score
+import os
 
 # Set the 'Agg' matplotlib backend to avoid plots appearing on the display (we only want them
 # saved to .png files)
 import matplotlib
+import numpy as np
+import pandas as pd
+# from IPython.core.display import display
+from sklearn.metrics import accuracy_score
 
 matplotlib.use('Agg')
 

@@ -2,6 +2,7 @@
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/.ipynb_checkpoints" />
       <excludeFolder url="file://$MODULE_DIR$/ShaipUnittestWorkspace" />
       <excludeFolder url="file://$MODULE_DIR$/ShaipWorkspace" />
       <excludeFolder url="file://$MODULE_DIR$/dicom_dir" />

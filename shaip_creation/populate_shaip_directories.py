@@ -22,10 +22,7 @@ def _filename_to_contrast_gtstring(fname):
 
 
 def _filename_to_id(fname):
-    """ Filenames look like this: "ID_0087_AGE_0044_CONTRASICOM_DIR = 'dicom_dir'
-SHAIP_INPUT_DIR = 'ShaipWorkspace/inputs'
-GT_DIR = 'ShaipWorkspace/inputs/groundtruth'
-DATA_DIR = 'ShaipWorkspace/inputs/groundtruth'T_0_CT.dcm """
+    """ Filenames look like this: "ID_0087_AGE_0044_CONTRAST_0_CT.dcm """
     assert fname[:3] == 'ID_'
     return fname[:7]
 
@@ -58,7 +55,7 @@ def do_it(shaip_root, only_these_ids=None):
         _, dname = os.path.split(dpath)
         id_ = _filename_to_id(dname)
         if (only_these_ids is not None) and (id_ not in only_these_ids):
-            print('Skippling...', id_)
+            print('Skipping...', id_)
             continue
         gt = _filename_to_contrast_gtstring(dname)
         gtpath = os.path.join(gt_dir, id_)
@@ -96,7 +93,7 @@ if __name__ == '__main__':
     prepare_unittest_workspace = False
 
     if prepare_unittest_workspace:
-        # Following only used by Ian to create the ShaipUnittestWorkspace, which is commited.
+        # Following only used by Ian to create the ShaipUnittestWorkspace, which is committed.
         # Then for unit tests we select 8 + 8 datasets, balancing ct and cta
         unit_test_ids_1 = ['ID_000' + str(i) for i in range(8)]
         unit_test_ids_0 = ['ID_005' + str(i) for i in range(8)]

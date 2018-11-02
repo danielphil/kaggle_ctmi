@@ -2,8 +2,8 @@
 A maximally simple solution to CT / CTA detection!
 """
 
-import os
 import logging
+import os
 from collections import Counter
 from glob import glob
 
