@@ -22,8 +22,15 @@ class Algorithm(object):
     """ This contains the details of our solution, intended to be largely
     isolated from other infra-structure issues. """
 
-    def __init__(self):
+    def __init__(self, cache_dir=None):
+        """ Optionally pass a directory (full path) which the algorithm can use
+        for caching results (e.g. preprocessing) between invocations."""
         self.history = None     # Will keep a plot of accuracy by epoch
+        self.cache_dir = cache_dir
+        self.preprocessing_cache_dir = None
+        if cache_dir:
+            self.preprocessing_cache_dir = os.path.join(cache_dir, 'preprocessing')
+            os.makedirs(self.preprocessing_cache_dir, exist_ok=True)
 
     # Class level constants
     downsample_factor = (4, 4)
@@ -59,8 +66,28 @@ class Algorithm(object):
 
     def preprocessed_images(self, cohort):
         """ Apply preprocessing - mainly conversion to HU """
-        logging.info("Preprocessing...")
-        result = [self._preprocess_one_dicom(dcm) for dcm in cohort.dicoms]
+
+        def cached_preprocess_one_dicom(ix):
+            if not self.preprocessing_cache_dir:
+                # If we have no cache, have to compute and be done.
+                return self._preprocess_one_dicom(cohort.dicoms[ix])
+
+            id_ = cohort.ids[ix]
+            cached_file_name = os.path.join(self.preprocessing_cache_dir, id_ + '.npy')
+            if os.path.exists(cached_file_name):
+                logging.info("Using preprocessing cache...")
+                image = np.load(cached_file_name)
+            else:
+                logging.info("Preprocessing...")
+                image = self._preprocess_one_dicom(cohort.dicoms[ix])
+                np.save(cached_file_name, image)
+            return image
+
+        # Trick to ensure we only show a logging message once.
+        dup_filter = DuplicateFilter()
+        logging.getLogger().addFilter(dup_filter)
+        result = [cached_preprocess_one_dicom(ix) for ix in range(cohort.size)]
+        logging.getLogger().removeFilter(dup_filter)
         return result
 
     def train(self, cohort):
@@ -194,3 +221,13 @@ class AccuracyHistory(keras.callbacks.Callback):
             plt.show()
         else:
             plt.show()
+
+class DuplicateFilter(object):
+    """ A logging filter to remove duplicates.  (Used in preprocessing method)"""
+    def __init__(self):
+        self.msgs = set()
+
+    def filter(self, record):
+        rv = record.msg not in self.msgs
+        self.msgs.add(record.msg)
+        return rv

@@ -20,7 +20,7 @@ class Experiment(object):
     def __init__(self, shaip_root_dir):
         self.shaip = ShaipWorkspace(shaip_root_dir)
         self.shaip.check()
-        self.algorithm = Algorithm()
+        self.algorithm = Algorithm(self.shaip.cache_dir)
         self.results = Results(self.shaip.results_dir)
 
     def setup_logging(self):

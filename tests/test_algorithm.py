@@ -1,9 +1,8 @@
 import os
+import time
 from tempfile import TemporaryDirectory
 
-# Set the 'Agg' matplotlib backend to avoid plots appearing on the display (we only want them
-# saved to .png files)
-
+import matplotlib
 import numpy as np
 from keras.layers import Dense
 from keras.models import Sequential
@@ -11,7 +10,8 @@ from keras.models import Sequential
 from kaggle_ctmi.algorithm import Algorithm, AccuracyHistory
 from kaggle_ctmi.cohort import Cohort, ShaipWorkspace
 
-import matplotlib
+# Set the 'Agg' matplotlib backend to avoid plots appearing on the display (we only want them
+# saved to .png files)
 matplotlib.use('Agg')
 # noinspection PyPep8
 import matplotlib.pyplot as plt
@@ -28,12 +28,32 @@ def test__preprocess_one_dicom():
     plt.show()
 
 
-def test_preprocessed_cohort_accessors():
+def test_preprocessed_cohort():
     algorithm = Algorithm()
     cohort = Cohort(ShaipWorkspace())
     ppimages = algorithm.preprocessed_images(cohort)
     assert len(ppimages) == cohort.size
 
+def test_preprocessed_cohort_with_cache():
+    with TemporaryDirectory() as cache_dir:
+        algorithm = Algorithm(cache_dir)
+        cohort = Cohort(ShaipWorkspace())
+        start1 = time.time()
+        ppimages1 = algorithm.preprocessed_images(cohort)
+        elapsed1 = time.time()-start1
+        print("\nTime for first pass = %6.4f" % elapsed1)
+        assert len(ppimages1) == cohort.size
+
+        # And again, this time we should use the cache
+        start2 = time.time()
+        ppimages2 = algorithm.preprocessed_images(cohort)
+        elapsed2 = time.time() - start2
+        print("Time for second pass = %6.4f\n" % elapsed2)
+        assert len(ppimages2) == cohort.size
+        np.array_equal(ppimages1, ppimages2)
+
+        # We expect the second pass to be much faster
+        assert elapsed2 < elapsed1 / 5
 
 def test_data_scaling():
     algorithm = Algorithm()
