@@ -45,7 +45,7 @@ class TestCommandLine(unittest.TestCase):
     def test_command_line_help(self):
         expt = Experiment('ShaipUnittestWorkspace/')
         with self.assertRaises(SystemExit):
-            expt.command_line(['experiment.py', '-help'])
+            expt.command_line(['experiment.py', '--help'])
 
     def test_command_line_error(self):
         expt = Experiment('ShaipUnittestWorkspace/')

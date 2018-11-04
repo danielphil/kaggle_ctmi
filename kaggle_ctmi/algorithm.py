@@ -25,7 +25,7 @@ class Algorithm(object):
     def __init__(self, cache_dir=None):
         """ Optionally pass a directory (full path) which the algorithm can use
         for caching results (e.g. preprocessing) between invocations."""
-        self.history = None     # Will keep a plot of accuracy by epoch
+        self.history = None  # Will keep a plot of accuracy by epoch
         self.cache_dir = cache_dir
         self.preprocessing_cache_dir = None
         if cache_dir:
@@ -222,8 +222,10 @@ class AccuracyHistory(keras.callbacks.Callback):
         else:
             plt.show()
 
+
 class DuplicateFilter(object):
     """ A logging filter to remove duplicates.  (Used in preprocessing method)"""
+
     def __init__(self):
         self.msgs = set()
 

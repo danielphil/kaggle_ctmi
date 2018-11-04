@@ -34,13 +34,14 @@ def test_preprocessed_cohort():
     ppimages = algorithm.preprocessed_images(cohort)
     assert len(ppimages) == cohort.size
 
+
 def test_preprocessed_cohort_with_cache():
     with TemporaryDirectory() as cache_dir:
         algorithm = Algorithm(cache_dir)
         cohort = Cohort(ShaipWorkspace())
         start1 = time.time()
         ppimages1 = algorithm.preprocessed_images(cohort)
-        elapsed1 = time.time()-start1
+        elapsed1 = time.time() - start1
         print("\nTime for first pass = %6.4f" % elapsed1)
         assert len(ppimages1) == cohort.size
 
@@ -54,6 +55,7 @@ def test_preprocessed_cohort_with_cache():
 
         # We expect the second pass to be much faster
         assert elapsed2 < elapsed1 / 5
+
 
 def test_data_scaling():
     algorithm = Algorithm()
