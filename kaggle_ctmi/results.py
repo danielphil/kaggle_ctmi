@@ -143,7 +143,8 @@ class Results(object):
         result = 'Test accuracy: %5.3f' % score
         logging.info(result)
 
-        # Render the training plot to a png
-        history.plot_training(os.path.join(self.results_dir, 'training_plot.png'))
+        # Render the training plot to a png (if we did training on this run)
+        if history:
+            history.plot_training(os.path.join(self.results_dir, 'training_plot.png'))
 
         self.generate_static_index_html(result, 'index.html')

@@ -2,6 +2,7 @@
 A simple solution to CT / CTA detection based in Kaggle datasets.
 """
 
+import argparse
 import logging
 import os
 import time
@@ -22,6 +23,13 @@ class Experiment(object):
         self.shaip.check()
         self.algorithm = Algorithm(self.shaip.cache_dir)
         self.results = Results(self.shaip.results_dir)
+        self.args = None
+
+    def command_line(self):
+        parser = argparse.ArgumentParser(description='CT/CTA discrimination to run in SHAIP')
+        parser.add_argument('-nt', '--notrain', help='skip training step (assumes model exists',
+                            action='store_true', default=False)
+        self.args = parser.parse_args()
 
     def setup_logging(self):
         # see https://docs.python.org/2.4/lib/multiple-destinations.html
@@ -59,6 +67,7 @@ class Experiment(object):
         """ Main Experiment entry point """
 
         self.setup_logging()
+        self.command_line()
         start_time = time.time()
 
         logging.info("Starting Kaggle-CTMI Experiment\n")
@@ -68,10 +77,13 @@ class Experiment(object):
         train_cohort, test_cohort = cohort.split_cohort_train_test(0.3)
         logging.info("Loaded %d datasets", cohort.size)
 
-        logging.info("Training on %d datasets...", train_cohort.size)
-        model = self.algorithm.train(train_cohort)
-
-        Algorithm.save_model(model, self.shaip.models_dir + 'model')
+        if self.args.notrain:
+            logging.info("Skipping training, using saved model")
+            model = self.algorithm.load_model(self.shaip.models_dir + 'model')
+        else:
+            logging.info("Training on %d datasets...", train_cohort.size)
+            model = self.algorithm.train(train_cohort)
+            Algorithm.save_model(model, self.shaip.models_dir + 'model')
 
         logging.info("Prediction on %d datasets...", test_cohort.size)
         test_predictions = self.algorithm.predict(model, test_cohort)
