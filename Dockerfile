@@ -15,6 +15,6 @@ COPY ShaipWorkspace/outputs/results/ /root/ShaipWorkspace/outputs/results/
 WORKDIR /root/
 
 ENV PYTHONPATH /root/
-CMD python kaggle_ctmi/experiment.py
+CMD python kaggle_ctmi/experiment.py --train --predict --evaluate
 
 
