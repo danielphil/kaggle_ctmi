@@ -14,53 +14,64 @@ def test_logging():
     logging.debug("This should go to the logfile only")
     logging.warning("You have been warned!")
 
-def test_command_line_empty():
-    expt = Experiment('ShaipUnittestWorkspace/')
-    testargs = ['experiment.py']
-    with unittest.mock.patch('sys.argv', testargs):
-        expt.command_line()
-        assert expt.args.notrain == False
 
-def test_command_line_notrain():
-    expt = Experiment('ShaipUnittestWorkspace/')
-    testargs = ['experiment.py', '--notrain']
-    with unittest.mock.patch('sys.argv', testargs):
-        expt.command_line()
-        assert expt.args.notrain == True
+class TestCommandLine(unittest.TestCase):
 
-def test_command_line_nt():
-    expt = Experiment('ShaipUnittestWorkspace/')
-    testargs = ['experiment.py', '-nt']
-    with unittest.mock.patch('sys.argv', testargs):
-        expt.command_line()
-        assert expt.args.notrain == True
+    def test_command_line_empty(self):
+        expt = Experiment('ShaipUnittestWorkspace/')
+        with self.assertRaises(SystemExit):
+            # With no arguments there's nothing to do, so expect to print usage then exit
+            expt.command_line(['experiment.py'])
 
-def test_command_line_help():
-    expt = Experiment('ShaipUnittestWorkspace/')
-    testargs = ['experiment.py', '--help']
-    with unittest.mock.patch('sys.argv', testargs):
-        try:
-            expt.command_line()
-        except SystemExit:
-            pass
+    def test_command_line_train_only(self):
+        expt = Experiment('ShaipUnittestWorkspace/')
+        expt.command_line(['experiment.py', '--train'])
+        self.assertEqual(expt.args.train, True)
+        self.assertEqual(expt.args.predict, False)
+        self.assertEqual(expt.args.evaluate, False)
 
-def test_command_line_error():
-    expt = Experiment('ShaipUnittestWorkspace/')
-    testargs = ['experiment.py', 'silly']
-    with unittest.mock.patch('sys.argv', testargs):
-        try:
-            expt.command_line()
-        except SystemExit:
-            pass
+    def test_command_line_all_phases(self):
+        expt = Experiment('ShaipUnittestWorkspace/')
+        expt.command_line(['experiment.py', '-tpe'])
+        self.assertEqual(expt.args.train, True)
+        self.assertEqual(expt.args.predict, True)
+        self.assertEqual(expt.args.evaluate, True)
 
-def test_main():
-    expt = Experiment('ShaipUnittestWorkspace/')
-    testargs = ['experiment.py']
-    with unittest.mock.patch('sys.argv', testargs):
-        expt.main()
+    def test_command_line_h(self):
+        expt = Experiment('ShaipUnittestWorkspace/')
+        with self.assertRaises(SystemExit):
+            expt.command_line(['experiment.py', '-h'])
 
-def test_main_notrain():
-    expt = Experiment('ShaipUnittestWorkspace/')
-    testargs = ['experiment.py', '--notrain']
-    with unittest.mock.patch('sys.argv', testargs):
-        expt.main()
+    def test_command_line_help(self):
+        expt = Experiment('ShaipUnittestWorkspace/')
+        with self.assertRaises(SystemExit):
+            expt.command_line(['experiment.py', '-help'])
+
+    def test_command_line_error(self):
+        expt = Experiment('ShaipUnittestWorkspace/')
+        with self.assertRaises(SystemExit):
+            expt.command_line(['experiment.py', '--sillyoption'])
+
+
+class TestExperimentMain(unittest.TestCase):
+    def test_all_phases(self):
+        expt = Experiment('ShaipUnittestWorkspace/')
+        expt.main(['experiment.py', '-tpe'])
+
+    def test_notrain(self):
+        expt = Experiment('ShaipUnittestWorkspace/')
+        expt.main(['experiment.py', '-pe'])
+
+    def test_predict_only(self):
+        expt = Experiment('ShaipUnittestWorkspace/')
+        expt.main(['experiment.py', '-p'])
+
+    def test_nothing(self):
+        expt = Experiment('ShaipUnittestWorkspace/')
+        with self.assertRaises(SystemExit):
+            expt.main(['experiment.py'])
+
+    def test_h(self):
+        expt = Experiment('ShaipUnittestWorkspace/')
+        with self.assertRaises(SystemExit):
+            expt.main(['experiment.py', '-h'])

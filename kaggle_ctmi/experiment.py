@@ -5,6 +5,7 @@ A simple solution to CT / CTA detection based in Kaggle datasets.
 import argparse
 import logging
 import os
+import sys
 import time
 
 import numpy as np
@@ -25,11 +26,23 @@ class Experiment(object):
         self.results = Results(self.shaip.results_dir)
         self.args = None
 
-    def command_line(self):
-        parser = argparse.ArgumentParser(description='CT/CTA discrimination to run in SHAIP')
-        parser.add_argument('-nt', '--notrain', help='skip training step (assumes model exists',
+    def command_line(self, argv):
+        parser = argparse.ArgumentParser(
+            prog='experiment.py',
+            description='CT/CTA discrimination to run in SHAIP',
+            epilog='If no phases are specified, program does nothing - exits')
+        parser.add_argument('-t', '--train', help='perform model training',
                             action='store_true', default=False)
-        self.args = parser.parse_args()
+        parser.add_argument('-p', '--predict', help='perform prediction over the test set',
+                            action='store_true', default=False)
+        parser.add_argument('-e', '--evaluate', help='generate results',
+                            action='store_true', default=False)
+
+        args = parser.parse_args(argv[1:])
+        if not any([args.train, args.predict, args.evaluate]):
+            parser.print_help()
+            sys.exit(0)
+        self.args = args
 
     def setup_logging(self):
         # see https://docs.python.org/2.4/lib/multiple-destinations.html
@@ -63,41 +76,49 @@ class Experiment(object):
             mpl_logger = logging.getLogger('matplotlib.font_manager')
             mpl_logger.setLevel(logging.WARNING)
 
-    def main(self):
-        """ Main Experiment entry point """
+    def main(self, argv):
+        """ Main Experiment entry point.
+        argv is the full argument list, so argv[0] is the program name.  In production
+        call as main(sys.argv)"""
 
+        np.random.seed(42)
         self.setup_logging()
-        self.command_line()
+        self.command_line(argv)
         start_time = time.time()
 
         logging.info("Starting Kaggle-CTMI Experiment\n")
 
-        logging.info("Loading data and groundtruth...")
+        logging.info("Finding data and groundtruth...")
         cohort = Cohort(self.shaip)
         train_cohort, test_cohort = cohort.split_cohort_train_test(0.3)
-        logging.info("Loaded %d datasets", cohort.size)
+        logging.info("Found %d datasets", cohort.size)
 
-        if self.args.notrain:
-            logging.info("Skipping training, using saved model")
-            model = self.algorithm.load_model(self.shaip.models_dir + 'model')
-        else:
+        if self.args.train:
             logging.info("Training on %d datasets...", train_cohort.size)
             model = self.algorithm.train(train_cohort)
             Algorithm.save_model(model, self.shaip.models_dir + 'model')
+        else:
+            logging.info("Skipping training, model saved from earlier run")
+            model = self.algorithm.load_model(self.shaip.models_dir + 'model')
 
-        logging.info("Prediction on %d datasets...", test_cohort.size)
-        test_predictions = self.algorithm.predict(model, test_cohort)
+        if self.args.predict:
+            logging.info("Prediction on %d datasets...", test_cohort.size)
+            test_predictions = self.algorithm.predict(model, test_cohort)
+        else:
+            logging.info("Skipping prediction, using predictions from earlier run")
+            # TODO: need to sort out caching of predictions
+            test_predictions = None
 
-        logging.info("Generating results to ShaipWorkspace/outputs/results/index.html...")
-        self.results.show_results(train_cohort, test_cohort,
-                                  self.algorithm.history, test_predictions)
+        if self.args.evaluate:
+            logging.info("Generating results to ShaipWorkspace/outputs/results/index.html...")
+            self.results.show_results(train_cohort, test_cohort,
+                                      self.algorithm.history, test_predictions)
 
         logging.info("Kaggle-CTMI Experiment done in %4.1f seconds.\n", (time.time() - start_time))
 
 
 # Lets do it!
 if __name__ == '__main__':
-    np.random.seed(42)
-
     expt = Experiment('ShaipWorkspace/')
-    expt.main()
+    # You'll need to set command arguments - e.g. --train --predict --evaluate (or -tpe)
+    expt.main(sys.argv)
