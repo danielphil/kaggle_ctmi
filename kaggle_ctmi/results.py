@@ -47,8 +47,6 @@ class Results(object):
     The Cancer Genome Atlas LUADA</a> collection
     
     
-    A summary table can be seen <a href="test_summary.html">  here </a>.
-    
     <h2>Training</h2>
     
     A table of training datasets can be seen <a href="training_cohort_table.html">  here </a>.
@@ -73,6 +71,9 @@ class Results(object):
     <p></p>
     
     ... more results to come!
+    
+    <h2> Log file </h2>
+    The  log file can be seen <a href="kaggle-ctmi.log"> here </a>.
     
     </body>
     </html>
