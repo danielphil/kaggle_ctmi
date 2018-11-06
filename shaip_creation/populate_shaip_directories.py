@@ -11,6 +11,7 @@ dataset id - e.g. ID_0001, containing the dicom file and GT respectively.
 import os
 import shutil
 from glob import glob
+import pydicom
 
 
 def _filename_to_contrast_gtstring(fname):
@@ -26,15 +27,42 @@ def _filename_to_id(fname):
     assert fname[:3] == 'ID_'
     return fname[:7]
 
+class Identifier:
+    def __init__(self):
+        self.identifiers = {}
+        self.counters = {}
+
+    def get(self, *key):
+        counter_key = key[:-1]
+        if key not in self.identifiers:
+            if counter_key not in self.counters:
+                self.counters[counter_key] = 0
+            self.identifiers[key] = self.counters[counter_key]
+            self.counters[counter_key] += 1
+
+        return str(self.identifiers[key])
+
+
+study_ids = Identifier()
+series_ids = Identifier()
+instance_ids = Identifier()
+
+
+def _get_dicom_identifier(fname):
+    dcm = pydicom.dcmread(fname)
+    study_id = study_ids.get(dcm.StudyInstanceUID)
+    series_id = series_ids.get(dcm.StudyInstanceUID, dcm.SeriesInstanceUID)
+    instance_id = instance_ids.get(dcm.StudyInstanceUID, dcm.SeriesInstanceUID, dcm.SOPInstanceUID)
+    return (study_id, series_id, instance_id)
+
 
 def do_it(shaip_root, only_these_ids=None):
     dicom_dir = 'dicom_dir'
     shaip_input_dir = os.path.join(shaip_root, 'inputs')
     gt_dir = os.path.join(shaip_root, 'inputs/groundtruth')
-    data_dir = os.path.join(shaip_root, 'inputs/data')
+    data_dir = os.path.join(shaip_root, 'inputs/dicom')
 
     assert os.path.isdir(dicom_dir)
-    assert os.path.isdir(shaip_input_dir)
 
     assert not os.path.exists(gt_dir)
     assert not os.path.exists(data_dir)
@@ -57,30 +85,26 @@ def do_it(shaip_root, only_these_ids=None):
         if (only_these_ids is not None) and (id_ not in only_these_ids):
             print('Skipping...', id_)
             continue
+        study_uid, series_uid, instance_uid = _get_dicom_identifier(dpath)
         gt = _filename_to_contrast_gtstring(dname)
-        gtpath = os.path.join(gt_dir, id_)
-        datapath = os.path.join(data_dir, id_)
+        gtpath = os.path.join(gt_dir)
+        datapath = os.path.join(data_dir, study_uid, series_uid)
 
-        assert not os.path.exists(gtpath)
-        assert not os.path.exists(datapath)
+        gt_path = os.path.join(gtpath, 'labels.txt')
+        this_data_path = os.path.join(datapath, instance_uid + '.dcm')
 
-        this_gt_dir = os.path.join(gt_dir, id_)
-        this_data_dir = os.path.join(data_dir, id_)
-        this_gt_path = os.path.join(this_gt_dir, id_ + '.txt')
-        this_data_path = os.path.join(this_data_dir, id_ + '.dcm')
-
-        print(this_gt_path)
+        print(gt_path)
         print(this_data_path)
         print()
 
-        os.makedirs(this_gt_dir)
-        os.makedirs(this_data_dir)
+        os.makedirs(gtpath, exist_ok=True)
+        os.makedirs(datapath, exist_ok=True)
 
         shutil.copyfile(dpath, this_data_path)
-        with open(this_gt_path, 'w') as f:
-            f.write(gt)
+        with open(gt_path, 'a') as f:
+            f.write("{}: {}".format(this_data_path, gt))
 
-        assert os.path.exists(this_gt_path)
+        assert os.path.exists(gt_path)
         assert os.path.exists(this_data_path)
 
     print('Done')
